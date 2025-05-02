@@ -42,9 +42,6 @@ jobs:
         working-directory: ./genefer
         run: |
           make -f Makefile_macIntel -j
-          cd ..
-          cd bin
-          ./genefer_macIntel -h
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
