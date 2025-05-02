@@ -8,17 +8,18 @@ BIN_DIR = $(ROOT_DIR)/bin
 SRC_DIR = $(ROOT_DIR)/src
 
 OCL_INC = -I$(ROOT_DIR)/Khronos
-OCL_LIB = C:/Windows/System32/OpenCL.dll
+OCL_LIB = libOpenCL.dll.a
 
 # BOINC source code: https://github.com/BOINC/boinc/archive/refs/tags/client_release/7.24/7.24.3.zip
 # lib: Makefile.mingw => libboinc_api.a libboinc.a libboinc_opencl.a
 BOINC_DIR = $(ROOT_DIR)/../boinc
-BOINC_INC = -I$(BOINC_DIR) -I$(BOINC_DIR)/api -I$(BOINC_DIR)/lib -I$(BOINC_DIR)/win_build
-BOINC_LIB_DIR = $(BOINC_DIR)/lib_win64
-BOINC_LIB = $(BOINC_LIB_DIR)/libboinc_api.a $(BOINC_LIB_DIR)/libboinc.a
-BOINC_LIB_OCL = $(BOINC_LIB_DIR)/libboinc_opencl.a
+BOINC_INC = -I$(BOINC_DIR) -I$(BOINC_DIR)/api -I$(BOINC_DIR)/lib
+BOINC_LIB = -L$(BOINC_DIR)/api -L$(BOINC_DIR)/lib -lboinc_api -lboinc -Wl,--whole-archive -lpthread -Wl,--no-whole-archive
+BOINC_LIB_OCL = -lboinc_opencl
 
-CFLAGS = -DBOINC $(BOINC_INC) -Wall -Wextra -Wsign-conversion -ffinite-math-only -frename-registers
+GMP_DIR = $(ROOT_DIR)/../gmp
+
+CFLAGS = -DBOINC $(BOINC_INC) -I${GMP_DIR}/include -Wall -Wextra -Wsign-conversion -ffinite-math-only -frename-registers
 # -DDTRANSFORM -DIBDTRANSFORM -DSBDTRANSFORM
 FLAGS_CPU = -O3 -fopenmp
 # -DNTTRANSFORM2 -DNTTRANSFORM3
@@ -78,7 +79,7 @@ transform_ocl.o: $(SRC_DIR)/transform_ocl.cpp $(DEPS_TRANSFORM_GPU)
 	$(CC) $(CFLAGS) $(FLAGS_GPU) $(OCL_INC) -c $< -o $@
 
 $(EXEC_CPU): $(OBJS_CPU)
-	$(CC) $(FLAGS_CPU) -static $^ -lgmp $(BOINC_LIB) -o $@
+	$(CC) $(FLAGS_CPU) -static $^ ${GMP_DIR}/lib/libgmp.a $(BOINC_LIB) -o $@
 
 $(EXEC_GPU): $(OBJS_GPU)
-	$(CC) $(FLAGS_GPU) -static $^ -lgmp $(BOINC_LIB) $(BOINC_LIB_OCL) $(OCL_LIB) -o $@
+	$(CC) $(FLAGS_GPU) -static $^ ${GMP_DIR}/lib/libgmp.a $(BOINC_LIB) $(BOINC_LIB_OCL) $(OCL_LIB) -o $@

@@ -1,6 +1,6 @@
 # Compiler: llvm/clang 15
 # Use llvm/clang installed from homebrew (brew install llvm), Apple-shipped clang will not correctly link OpenMP
-CC = /usr/local/opt/llvm/bin/clang++ -std=c++17 -target x86_64-apple-macos10.13
+CC = /usr/local/opt/llvm/bin/clang++ -std=c++17
 RM = rm -f
 
 ROOT_DIR = ..
@@ -19,12 +19,12 @@ OMP_LIB = -L/usr/local/opt/libomp/lib -lomp
 # BOINC source code: https://github.com/BOINC/boinc/archive/refs/tags/client_release/7.24/7.24.3.zip
 BOINC_DIR = $(ROOT_DIR)/../boinc
 BOINC_INC = -I$(BOINC_DIR) -I$(BOINC_DIR)/api -I$(BOINC_DIR)/lib
-BOINC_LIB = -L$(BOINC_DIR)/mac_build/build/Deployment -lboinc_api -lboinc -lpthread
+BOINC_LIB = -L$(BOINC_DIR)/api -L$(BOINC_DIR)/lib -lboinc_api -lboinc -lpthread
 BOINC_LIB_OCL = -lboinc_opencl
 
 CFLAGS = -DBOINC $(BOINC_INC) -Wall -Wextra -Wsign-conversion -ffinite-math-only
-FLAGS_CPU = -O3 -fopenmp
-FLAGS_GPU = -O3 -DGPU
+FLAGS_CPU = -O3 -fopenmp -mmacosx-version-min=10.14
+FLAGS_GPU = -O3 -DGPU -mmacosx-version-min=10.14
 
 OBJS_CPU = main.o transform_i32.o transform_sse2.o transform_sse4.o transform_avx.o transform_fma.o transform_512.o
 OBJS_GPU = maing.o transform_ocl.o
