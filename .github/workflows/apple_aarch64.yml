@@ -44,7 +44,7 @@ jobs:
           make -f Makefile_macARM64 -j
           cd ..
           cd bin
-          ldd genefer_macARM
+          otool -L genefer_macARM
           cp /opt/homebrew/opt/gmp/lib/libgmp.10.dylib libgmp.10.dylib
           cp /opt/homebrew/opt/llvm/lib/libomp.dylib libomp.dylib
 
