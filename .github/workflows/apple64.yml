@@ -4,6 +4,7 @@ on: [push, pull_request]
 
 env:
   BOINC_DIR: ./boinc
+  MACOSX_DEPLOYMENT_TARGET: "10.14"
 
 jobs:
   build:
