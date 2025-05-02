@@ -25,6 +25,19 @@ jobs:
         run: |
           x86_64-w64-mingw32-gcc -v
 
+      - name: Build OpenCL.dll
+        run: |
+          export CC=x86_64-w64-mingw32-gcc
+          export CXX=x86_64-w64-mingw32-g++
+          git clone --depth 1 https://github.com/KhronosGroup/OpenCL-ICD-Loader
+          git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers
+          cd OpenCL-ICD-Loader
+          mkdir build-mingw
+          cd build-mingw
+          cmake .. -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DOPENCL_ICD_LOADER_HEADERS_DIR=../../OpenCL-Headers -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=./install
+          make -j
+          make install
+
       - name: Build BOINC
         run: |
           export CC=x86_64-w64-mingw32-gcc
@@ -47,22 +60,10 @@ jobs:
           make -j
           make install
 
-      - name: Build OpenCL.dll
-        run: |
-          export CC=x86_64-w64-mingw32-gcc
-          export CXX=x86_64-w64-mingw32-g++
-          git clone --depth 1 https://github.com/KhronosGroup/OpenCL-ICD-Loader
-          cd OpenCL-ICD-Loader
-          mkdir build-mingw
-          cd build-mingw
-          cmake .. -DCMAKE_SYSTEM_NAME=Windows -DOPENCL_ICD_LOADER_BUILD_SHARED_LIBS=OFF -DCMAKE_BUILD_TYPE=Release
-          make -j
-          ls -l
-
       - name: Build project
         working-directory: ./genefer
         run: |
-          make -f Makefile_win64 -j CC=x86_64-w64-mingw32-g++
+          make -f Makefile_win64 -j CC=x86_64-w64-mingw32-g++ OCL_LIB=/home/runner/work/genefer22/genefer22/OpenCL-ICD-Loader/build-mingw/install/lib/libOpenCL.dll.a
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

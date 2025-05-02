@@ -1,4 +1,4 @@
-name: x64
+name: aarch64
 
 on: [push, pull_request]
 
@@ -7,8 +7,8 @@ env:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    name: linux / ubuntu-latest
+    runs-on: ubuntu-24.04-arm
+    name: linux aarch / ubuntu
 
     defaults:
       run:
@@ -16,6 +16,14 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
+      - name: Install gcc
+        run: |
+          sudo apt-get install gcc-14 g++-14
+          sudo update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-14 100
+          sudo update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-14 100
+          sudo update-alternatives --config gcc
+          sudo update-alternatives --config g++
 
       - name: Print GCC version
         run: |
@@ -31,17 +39,17 @@ jobs:
           git clone --depth 1 https://github.com/BOINC/boinc.git
           cd boinc
           ./_autosetup
-          ./configure --disable-server --disable-manager --disable-client --enable-static CXXFLAGS="-O3"
+          ./configure --host=aarch64-linux --with-boinc-platform="aarch64-unknown-linux-gnu" --disable-server --disable-manager --disable-client --enable-static CXXFLAGS="-O3"
           make -j
 
       - name: Build project
         working-directory: ./genefer
         run: |
-          make -f Makefile_linux64 -j
+          make -f Makefile_linuxARM64 -j
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: linux64-latest
+          name: linuxaarch64-latest
           retention-days: 1
           path: ./bin/*
