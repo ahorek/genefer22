@@ -1,0 +1,51 @@
+name: arm
+
+on: [push, pull_request]
+
+env:
+  BOINC_DIR: ./boinc
+
+jobs:
+  build:
+    runs-on: macos-14
+    name: mac arm
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install libs
+        run: |
+          brew update
+          brew install autoconf automake libtool libomp llvm
+
+      - name: Print GCC version
+        run: |
+          /opt/homebrew/opt/llvm/bin/clang++ -v
+
+      - name: Build BOINC
+        run: |
+          export PATH="/opt/homebrew/opt/libtool/libexec/gnubin:/usr/local/opt/libtool/libexec/gnubin:$PATH"
+          export CC=/opt/homebrew/opt/llvm/bin/clang
+          export CXX=/opt/homebrew/opt/llvm/bin/clang++
+          cd ..
+          git clone --depth 1 https://github.com/BOINC/boinc.git
+          cd boinc
+          ./_autosetup
+          ./configure --disable-server --disable-manager --disable-client --enable-static CXXFLAGS="-O3"
+          make -j
+
+      - name: Build project
+        working-directory: ./genefer
+        run: |
+          make -f Makefile_macARM64 -j
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: macarm-latest
+          retention-days: 1
+          path: ./bin/*

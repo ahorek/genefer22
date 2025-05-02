@@ -1,0 +1,56 @@
+name: x86
+
+on: [push, pull_request]
+
+env:
+  BOINC_DIR: ./boinc
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: linux / ubuntu-latest (32-bit build)
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install 32-bit GCC libraries
+        run: |
+          sudo dpkg --add-architecture i386
+          sudo apt-get update
+          sudo apt-get install gcc-multilib g++-multilib
+          sudo apt-get install libssl-dev:i386 libcurl4-openssl-dev:i386 zlib1g-dev:i386 libc6-dev:i386 libgmp-dev:i386 opencl-headers:i386 ocl-icd-opencl-dev:i386
+
+      - name: Print GCC version
+        run: |
+          gcc -v
+
+      - name: Build BOINC (32-bit)
+        run: |
+          cd ..
+          git clone --depth 1 https://github.com/BOINC/boinc.git
+          cd boinc
+          ./_autosetup
+          export CFLAGS="-O3 -m32"
+          export CXXFLAGS="-O3 -m32"
+          export LDFLAGS="-m32"
+          ./configure --host=i686-linux-gnu --disable-server --disable-manager --disable-client --enable-static
+          make -j
+
+      - name: Build project (32-bit)
+        working-directory: ./genefer
+        run: |
+          export CFLAGS="-O3 -m32"
+          export CXXFLAGS="-O3 -m32"
+          export LDFLAGS="-m32"
+          make -f Makefile_linux32 -j
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: linux32-latest
+          retention-days: 1
+          path: ./bin/*
