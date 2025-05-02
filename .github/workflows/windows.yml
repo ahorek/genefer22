@@ -30,14 +30,11 @@ jobs:
       - name: Print GCC version
         run: |
           export PATH="$HOME/winlibs/mingw64/bin:$PATH"
-          ls -l $HOME/winlibs/mingw64/bin
-          x86_64-w64-mingw32-gcc -v
+          gcc -v
 
       - name: Build OpenCL.dll
         run: |
           export PATH="$HOME/winlibs/mingw64/bin:$PATH"
-          export CC=x86_64-w64-mingw32-gcc
-          export CXX=x86_64-w64-mingw32-g++
           git clone --depth 1 https://github.com/KhronosGroup/OpenCL-ICD-Loader
           git clone --depth 1 https://github.com/KhronosGroup/OpenCL-Headers
           cd OpenCL-ICD-Loader
@@ -50,8 +47,6 @@ jobs:
       - name: Build BOINC
         run: |
           export PATH="$HOME/winlibs/mingw64/bin:$PATH"
-          export CC=x86_64-w64-mingw32-gcc
-          export CXX=x86_64-w64-mingw32-g++
           cd ..
           git clone --depth 1 https://github.com/BOINC/boinc.git
           cd boinc
@@ -62,8 +57,6 @@ jobs:
       - name: Build GMP
         run: |
           export PATH="$HOME/winlibs/mingw64/bin:$PATH"
-          export CC=x86_64-w64-mingw32-gcc
-          export CXX=x86_64-w64-mingw32-g++
           git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
           cd gmp-6.3
           ./.bootstrap
@@ -75,7 +68,7 @@ jobs:
         working-directory: ./genefer
         run: |
           export PATH="$HOME/winlibs/mingw64/bin:$PATH"
-          make -f Makefile_win64 -j CC=x86_64-w64-mingw32-g++ OCL_LIB=/home/runner/work/genefer22/genefer22/OpenCL-ICD-Loader/build-mingw/install/lib/libOpenCL.dll.a
+          make -f Makefile_win64 -j OCL_LIB=/home/runner/work/genefer22/genefer22/OpenCL-ICD-Loader/build-mingw/install/lib/libOpenCL.dll.a
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
