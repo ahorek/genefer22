@@ -35,7 +35,7 @@ jobs:
           git clone --depth 1 https://github.com/BOINC/boinc.git
           cd boinc
           ./_autosetup
-          ./configure --disable-server --disable-manager --disable-client --enable-static CXXFLAGS="-O3" LDFLAGS="-mmacosx-version-min=10.14"
+          ./configure --disable-server --disable-manager --disable-client --enable-static CFLAGS="-O3 -mmacosx-version-min=10.14" CXXFLAGS="-O3 -mmacosx-version-min=10.14" LDFLAGS="-mmacosx-version-min=10.14"
           make -j
 
       - name: Build project
