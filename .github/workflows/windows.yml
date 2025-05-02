@@ -30,6 +30,7 @@ jobs:
       - name: Print GCC version
         run: |
           export PATH="$HOME/winlibs/mingw64/bin:$PATH"
+          ls -l $HOME/winlibs/mingw64/bin
           x86_64-w64-mingw32-gcc -v
 
       - name: Build OpenCL.dll
