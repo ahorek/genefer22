@@ -40,7 +40,7 @@ jobs:
           cd OpenCL-ICD-Loader
           mkdir build-mingw
           cd build-mingw
-          cmake .. -DCMAKE_SYSTEM_NAME=Windows -DCMAKE_C_COMPILER=x86_64-w64-mingw32-gcc -DOPENCL_ICD_LOADER_HEADERS_DIR=../../OpenCL-Headers -DCMAKE_RC_COMPILER=x86_64-w64-mingw32-windres -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=./install
+          cmake .. -DCMAKE_SYSTEM_NAME=Windows -DOPENCL_ICD_LOADER_HEADERS_DIR=../../OpenCL-Headers -DBUILD_SHARED_LIBS=ON -DCMAKE_INSTALL_PREFIX=./install
           make -j
           make install
 
