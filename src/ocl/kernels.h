@@ -205,7 +205,8 @@ static const char * const src_ocl_kernels = \
 "	return r;\n" \
 "}\n" \
 "\n" \
-"INLINE uint96 uint96_add_64(const uint96 x, const uint64 y)\n" \
+"__attribute__((noinline))\n" \
+"uint96 uint96_add_64(const uint96 x, const uint64 y)\n" \
 "{\n" \
 "	uint96 r;\n" \
 "#if defined(PTX_ASM)\n" \

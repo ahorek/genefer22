@@ -504,6 +504,7 @@ public:
 		if (_vendor == EVendor::NVIDIA) strcat(pgmOptions, " -cl-nv-verbose");
 		if (_vendor == EVendor::AMD) strcat(pgmOptions, " -save-temps=.");
 #endif
+        strcat(pgmOptions, " -save-temps=.");
 		const cl_int err = clBuildProgram(_program, 1, &_device, pgmOptions, nullptr, nullptr);
 
 #if !defined(ocl_debug)
