@@ -209,13 +209,31 @@ static const char * const src_ocl_kernels = \
 "uint96 uint96_add_64(const uint96 x, const uint64 y)\n" \
 "{\n" \
 "	uint96 r;\n" \
-"#if defined(PTX_ASM)\n" \
-"	asm volatile (\"add.cc.u64 %0, %1, %2;\" : \"=l\" (r.s0) : \"l\" (x.s0), \"l\" (y));\n" \
-"	asm volatile (\"addc.u32 %0, %1, 0;\" : \"=r\" (r.s1) : \"r\" (x.s1));\n" \
-"#else\n" \
-"	const uint64 s0 = x.s0 + y;\n" \
-"	r.s0 = s0; r.s1 = x.s1 + ((s0 < y) ? 1 : 0);\n" \
-"#endif\n" \
+"uint32 x_lo = (uint32)(x.s0);\n" \
+"uint32 x_hi = (uint32)(x.s0 >> 32);\n" \
+"uint32 y_lo = (uint32)(y);\n" \
+"uint32 y_hi = (uint32)(y >> 32);\n" \
+"uint32 r_lo, r_hi, r_hh;\n" \
+"__asm__ volatile (\n" \
+"    \"v_add_co_u32 %0, vcc_lo, %1, %2;\"\n" \
+"    : \"=v\"(r_lo)\n" \
+"    : \"v\"(x_lo), \"v\"(y_lo)\n" \
+"    : \"vcc_lo\"\n" \
+");\n" \
+"__asm__ volatile (\n" \
+"    \"v_add_co_ci_u32_e32 %0, vcc_lo, %1, %2, vcc_lo;\"\n" \
+"    : \"=v\"(r_hi)\n" \
+"    : \"v\"(x_hi), \"v\"(y_hi)\n" \
+"    : \"vcc_lo\"\n" \
+");\n" \
+"__asm__ volatile (\n" \
+"    \"v_add_co_ci_u32_e32 %0, vcc_lo, %1, %2, vcc_lo;\"\n" \
+"    : \"=v\"(r_hh)\n" \
+"    : \"v\"(x.s1), \"v\"(0)\n" \
+"    : \"vcc_lo\"\n" \
+");\n" \
+"r.s0 = ((uint64)r_hi << 32) | r_lo;\n" \
+"r.s1 = r_hh;\n" \
 "	return r;\n" \
 "}\n" \
 "\n" \
