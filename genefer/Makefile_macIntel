@@ -2,7 +2,6 @@
 # Use llvm/clang installed from homebrew (brew install llvm), Apple-shipped clang will not correctly link OpenMP
 CC = /usr/local/opt/llvm/bin/clang++ -std=c++17
 RM = rm -f
-INSTALL_NAME_TOOL = install_name_tool
 
 ROOT_DIR = ..
 
@@ -79,14 +78,8 @@ transform_i32.o: $(SRC_DIR)/transform_i32.cpp $(DEPS_TRANSFORM_CPUi32)
 transform_ocl.o: $(SRC_DIR)/transform_ocl.cpp $(DEPS_TRANSFORM_GPU)
 	$(CC) $(CFLAGS) $(FLAGS_GPU) $(GMP_INC) $(OMP_INC) $(OCL_INC) -c $< -o $@
 
-$(INTERMEDIATE_EXEC_CPU): $(OBJS_CPU)
+$(EXEC_CPU): $(OBJS_CPU)
 	$(CC) $(FLAGS_CPU) $^ $(GMP_INC) $(GMP_LIB) $(OMP_INC) $(OMP_LIB) $(BOINC_LIB) -o $@
 
-$(INTERMEDIATE_EXEC_GPU): $(OBJS_GPU)
+$(EXEC_GPU): $(OBJS_GPU)
 	$(CC) $(FLAGS_GPU) $^ $(GMP_INC) $(GMP_LIB) $(OMP_INC) $(OMP_LIB) $(BOINC_LIB) $(BOINC_LIB_OCL) $(OCL_LIB) -o $@
-
-# Use install_name_tool to allow executable to look for dynamic load libraries in the same directory as the executable
-$(EXEC_CPU): $(INTERMEDIATE_EXEC_CPU)
-	$(INSTALL_NAME_TOOL) -change '/usr/local/opt/libomp/lib/libomp.dylib' '@executable_path/libomp.dylib' -change '/usr/local/opt/gmp/lib/libgmp.10.dylib' '@executable_path/libgmp.10.dylib' $^ && cp $^ $@
-$(EXEC_GPU): $(INTERMEDIATE_EXEC_GPU)
-	$(INSTALL_NAME_TOOL) -change '/usr/local/opt/gmp/libgmp.10.dylib' '@executable_path/libgmp.10.dylib' $^ && cp $^ $@
