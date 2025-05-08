@@ -29,7 +29,8 @@ jobs:
 
       - name: Build GMP
         run: |
-          export PATH="/opt/homebrew/opt/libtool/libexec/gnubin:/usr/local/opt/libtool/libexec/gnubin:$PATH"
+          export PATH="/opt/homebrew/opt/texinfo/bin:/opt/homebrew/opt/libtool/libexec/gnubin:/usr/local/opt/libtool/libexec/gnubin:$PATH"
+          makeinfo --version
           export CC=/usr/local/opt/llvm/bin/clang
           export CXX=/usr/local/opt/llvm/bin/clang++
           git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
