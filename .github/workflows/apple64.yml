@@ -45,16 +45,18 @@ jobs:
           export PATH="/opt/homebrew/opt/libtool/libexec/gnubin:/usr/local/opt/libtool/libexec/gnubin:$PATH"
           export CC=/usr/local/opt/llvm/bin/clang
           export CXX=/usr/local/opt/llvm/bin/clang++
-          git clone --depth 1 https://github.com/llvm/llvm-project.git
-          cd llvm-project/openmp
+          # git clone --depth 1 https://github.com/llvm/llvm-project.git
+          cd openmp
           mkdir build
           cd build
           export CFLAGS="-mmacosx-version-min=10.14"
           export CXXFLAGS="-mmacosx-version-min=10.14"
           export LDFLAGS="-mmacosx-version-min=10.14"
           cmake ..
-          make
+          make -j
           ls -l
+          ls -l runtime
+          ls -l runtime/src
 
       - name: Build BOINC
         run: |
@@ -73,7 +75,7 @@ jobs:
         run: |
           rm -f /usr/local/opt/libomp/lib/libomp.dylib
           rm -f /usr/local/opt/gmp/lib/libgmp.dylib
-          make -f Makefile_macIntel -j
+          make -f Makefile_macIntel
           cd ..
           cd bin
           otool -L genefer_macIntel
