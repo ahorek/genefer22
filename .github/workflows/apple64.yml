@@ -48,6 +48,7 @@ jobs:
           otool -L genefer_macIntel
           cp /usr/local/opt/gmp/lib/libgmp.10.dylib libgmp.10.dylib
           cp /usr/local/opt/libomp/lib/libomp.dylib libomp.dylib
+          ./genefer_macIntel -h
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
