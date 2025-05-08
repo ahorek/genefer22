@@ -45,6 +45,9 @@ jobs:
           rm -f /usr/local/opt/libomp/lib/libomp.dylib
           rm -f /usr/local/opt/gmp/lib/libgmp.dylib
           make -f Makefile_macIntel -j
+          cd ..
+          cd bin
+          otool -L genefer_macIntel
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
