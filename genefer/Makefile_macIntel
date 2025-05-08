@@ -22,7 +22,7 @@ FLAGS_CPU = -O3 -fopenmp -mmacosx-version-min=10.14
 FLAGS_GPU = -O3 -DGPU -mmacosx-version-min=10.14
 
 GMP_DIR = $(ROOT_DIR)/../gmp
-OMP_DIR = $(ROOT_DIR)/../llvm-project/openmp/build
+OMP_DIR = $(ROOT_DIR)/openmp/build
 
 OBJS_CPU = main.o transform_i32.o transform_sse2.o transform_sse4.o transform_avx.o transform_fma.o transform_512.o
 OBJS_GPU = maing.o transform_ocl.o
