@@ -43,6 +43,10 @@ jobs:
         working-directory: ./genefer
         run: |
           make -f Makefile_macIntel -j
+          cd ..
+          cd bin
+          cp /usr/local/opt/gmp/lib/libgmp.10.dylib libgmp.10.dylib
+          cp /usr/local/opt/libomp/lib/libomp.dylib libomp.dylib
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
