@@ -21,7 +21,7 @@ jobs:
       - name: Install libs
         run: |
           brew update
-          brew install autoconf automake libtool libomp llvm
+          brew install autoconf automake libtool llvm texinfo
 
       - name: Print GCC version
         run: |
