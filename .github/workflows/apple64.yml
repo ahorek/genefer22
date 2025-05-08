@@ -33,7 +33,7 @@ jobs:
           export CC=/usr/local/opt/llvm/bin/clang
           export CXX=/usr/local/opt/llvm/bin/clang++
           # git clone --depth 1 https://github.com/llvm/llvm-project.git
-          cd openmp
+          cd llvm-project/openmp
           mkdir build
           cd build
           export CFLAGS="-mmacosx-version-min=10.14"
