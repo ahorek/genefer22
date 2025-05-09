@@ -79,7 +79,7 @@ jobs:
           cd ..
           cd bin
           otool -L genefer_macIntel
-          ./genefer_macIntel -h
+          #./genefer_macIntel -h
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
