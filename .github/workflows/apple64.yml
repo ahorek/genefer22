@@ -39,7 +39,7 @@ jobs:
           export CFLAGS="-mmacosx-version-min=10.14"
           export CXXFLAGS="-mmacosx-version-min=10.14"
           export LDFLAGS="-mmacosx-version-min=10.14"
-          cmake .. -DLIBOMP_ENABLE_SHARED=ON
+          cmake .. -DLIBOMP_ENABLE_SHARED=OFF
           make -j
           ls -l
           ls -l runtime
