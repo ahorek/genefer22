@@ -18,7 +18,7 @@ BOINC_LIB = -L$(BOINC_DIR)/api -L$(BOINC_DIR)/lib -lboinc_api -lboinc -lpthread
 BOINC_LIB_OCL = -lboinc_opencl
 
 CFLAGS = -DBOINC $(BOINC_INC) -Wall -Wextra -Wsign-conversion -ffinite-math-only -I${GMP_DIR}/include
-FLAGS_CPU = -O3 -mmacosx-version-min=10.14 -I${OMP_DIR}/include -fopenmp -I/usr/local/opt/libomp/include
+FLAGS_CPU = -O3 -mmacosx-version-min=10.14 -I${OMP_DIR}/include -I/usr/local/opt/libomp/include
 FLAGS_GPU = -O3 -DGPU -mmacosx-version-min=10.14
 
 GMP_DIR = $(ROOT_DIR)/../gmp
