@@ -10,7 +10,7 @@ SRC_DIR = $(ROOT_DIR)/src
 OCL_INC = -I$(ROOT_DIR)/Khronos
 OCL_LIB = C:/Windows/System32/OpenCL.dll
 
-# BOINC source code: https://github.com/BOINC/boinc/archive/refs/tags/client_release/7.24/7.24.3.zip
+# BOINC source code: https://github.com/BOINC/boinc/archive/refs/tags/client_release/8.2/8.2.0.zip
 # lib: Makefile.mingw => libboinc_api.a libboinc.a libboinc_opencl.a
 BOINC_DIR = $(ROOT_DIR)/../boinc
 BOINC_INC = -I$(BOINC_DIR) -I$(BOINC_DIR)/api -I$(BOINC_DIR)/lib
@@ -31,7 +31,7 @@ DEPS_COMMON = $(SRC_DIR)/transform.h $(SRC_DIR)/file.h $(SRC_DIR)/gint.h $(SRC_D
 DEPS_MAIN = $(SRC_DIR)/genefer.h $(SRC_DIR)/timer.h $(DEPS_COMMON)
 DEPS_TRANSFORM_CPUf64 = $(SRC_DIR)/transformCPUf64.h $(SRC_DIR)/transformCPUf64s.h $(SRC_DIR)/f64vector.h $(SRC_DIR)/simd128d.h $(DEPS_COMMON)
 DEPS_TRANSFORM_CPUi32 = $(SRC_DIR)/transformCPUi32.h $(DEPS_COMMON)
-DEPS_TRANSFORM_GPU = $(SRC_DIR)/transformGPU.h $(SRC_DIR)/transformGPUs.h $(SRC_DIR)/ocl.h $(DEPS_COMMON)
+DEPS_TRANSFORM_GPU = $(SRC_DIR)/transformGPU.h $(SRC_DIR)/ocl.h $(DEPS_COMMON)
 
 EXEC_CPU = $(BIN_DIR)/genefer.exe
 EXEC_GPU = $(BIN_DIR)/geneferg.exe
