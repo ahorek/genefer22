@@ -32,7 +32,7 @@ jobs:
           git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
           cd gmp-6.3
           ./.bootstrap
-          ./configure --host=x86_64-apple-darwin --prefix=${GITHUB_WORKSPACE}/../gmp
+          ./configure --host=x86_64-apple-darwin --prefix=${GITHUB_WORKSPACE}/gmp
           make -j
           make install
 
