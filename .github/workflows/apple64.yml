@@ -21,7 +21,7 @@ jobs:
       - name: Install libs
         run: |
           brew update
-          brew install autoconf automake libtool libomp texinfo
+          brew install autoconf automake libtool libomp texinfo llvm
 
       - name: Print GCC version
         run: |
@@ -29,6 +29,8 @@ jobs:
 
       - name: Build GMP
         run: |
+          export CC=/usr/local/opt/llvm/bin/clang
+          export CXX=/usr/local/opt/llvm/bin/clang++
           git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
           cd gmp-6.3
           ./.bootstrap
