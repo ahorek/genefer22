@@ -44,9 +44,18 @@ jobs:
         run: |
           make -f Makefile_macIntel -j
 
+      - name: Build GMP
+        run: |
+          git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
+          cd gmp-6.3
+          ./.bootstrap
+          ./configure --host=x86_64-apple-darwin --prefix=${GITHUB_WORKSPACE}/../gmp
+          make -j
+          make install
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: mac64-latest
           retention-days: 1
-          path: ./bin/*
+          path: ./gmp
