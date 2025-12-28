@@ -39,7 +39,7 @@ EXEC_GPU = $(BIN_DIR)/geneferg_androidARM64
 
 .PHONY: all clean_obj rebuild
 
-all: $(EXEC_CPU)
+all: $(EXEC_CPU) $(EXEC_GPU)
 
 clean_obj:
 	$(RM) $(OBJS_CPU)
