@@ -10,6 +10,9 @@ SRC_DIR = $(ROOT_DIR)/src
 # libgmp isn’t included in the standard development kit, so you’ll need to build it manually.
 GMP_DIR = $(ROOT_DIR)/../gmp
 
+OCL_INC = -I$(ROOT_DIR)/Khronos
+OCL_LIB = -L$(ROOT_DIR)/Khronos/Android -lOpenCL
+
 # BOINC source code: https://github.com/BOINC/boinc/archive/refs/tags/client_release/7.24/7.24.3.zip
 # ./_autosetup
 # ./configure --host=aarch64-linux --with-boinc-platform="aarch64-android-linux-gnu" --disable-server --disable-manager --disable-client --enable-static CXXFLAGS="-O3 "
@@ -18,16 +21,21 @@ GMP_DIR = $(ROOT_DIR)/../gmp
 BOINC_DIR = $(ROOT_DIR)/../boinc
 BOINC_INC = -I$(BOINC_DIR) -I$(BOINC_DIR)/api -I$(BOINC_DIR)/lib
 BOINC_LIB = -L$(BOINC_DIR)/api -L$(BOINC_DIR)/lib -lboinc_api -lboinc -ldl
+BOINC_LIB_OCL = -lboinc_opencl
 
 CFLAGS = -DBOINC $(BOINC_INC) -I${GMP_DIR}/include -Wall -Wextra -Wsign-conversion -ffinite-math-only
 FLAGS_CPU = -O3 -fopenmp -std=c++17
+FLAGS_GPU = -O3 -DGPU -std=c++17
 
 OBJS_CPU = main.o transform_neon.o
+OBJS_GPU = maing.o transform_ocl.o
 DEPS_COMMON = $(SRC_DIR)/transform.h $(SRC_DIR)/file.h $(SRC_DIR)/gint.h $(SRC_DIR)/pio.h $(SRC_DIR)/boinc.h
 DEPS_MAIN = $(SRC_DIR)/genefer.h $(SRC_DIR)/timer.h $(DEPS_COMMON)
 DEPS_TRANSFORM_CPUf64 = $(SRC_DIR)/transformCPUf64.h $(SRC_DIR)/transformCPUf64s.h $(SRC_DIR)/f64vector.h $(SRC_DIR)/simd128d.h $(DEPS_COMMON)
+DEPS_TRANSFORM_GPU = $(SRC_DIR)/transformGPU.h $(SRC_DIR)/ocl.h $(DEPS_COMMON)
 
 EXEC_CPU = $(BIN_DIR)/genefer_androidARM64
+EXEC_GPU = $(BIN_DIR)/geneferg_androidARM64
 
 .PHONY: all clean_obj rebuild
 
@@ -41,8 +49,17 @@ rebuild: clean_obj all
 main.o: $(SRC_DIR)/main.cpp $(DEPS_MAIN)
 	$(CC) $(CFLAGS) $(FLAGS_CPU) -c $< -o $@
 
+maing.o: $(SRC_DIR)/main.cpp $(DEPS_MAIN)
+	$(CC) $(CFLAGS) $(FLAGS_GPU) $(OCL_INC) -c $< -o $@
+
 transform_neon.o: $(SRC_DIR)/transform_neon.cpp $(DEPS_TRANSFORM_CPUf64)
 	$(CC) $(CFLAGS) $(FLAGS_CPU) -c $< -o $@
 
+transform_ocl.o: $(SRC_DIR)/transform_ocl.cpp $(DEPS_TRANSFORM_GPU)
+	$(CC) $(CFLAGS) $(FLAGS_GPU) $(OCL_INC) -c $< -o $@
+
 $(EXEC_CPU): $(OBJS_CPU)
 	$(CC) $(FLAGS_CPU) -static $^ ${GMP_DIR}/lib/libgmp.a $(BOINC_LIB) -o $@
+
+$(EXEC_GPU): $(OBJS_GPU)
+	$(CC) $(FLAGS_GPU) -static-libgcc -static-libstdc++ $^ ${GMP_DIR}/lib/libgmp.a $(BOINC_LIB) $(BOINC_LIB_OCL) $(OCL_LIB) -o $@
