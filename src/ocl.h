@@ -282,7 +282,7 @@ private:
 #if defined(ocl_debug)
 	const size_t _d;
 #endif
-	bool _profile = true;
+	bool _profile = false;
 #if defined(__APPLE__)
 	bool _isSync = true;
 #else
