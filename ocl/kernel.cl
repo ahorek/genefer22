@@ -6,7 +6,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 */
 
 #if __OPENCL_VERSION__ >= 120
-	#define INLINE
+	#define INLINE	static inline
 #else
 	#define INLINE
 #endif
