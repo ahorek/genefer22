@@ -337,7 +337,8 @@ public:
 		oclFatal(clGetDeviceInfo(_device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(_maxWorkGroupSize), &_maxWorkGroupSize, nullptr));
 		oclFatal(clGetDeviceInfo(_device, CL_DEVICE_PROFILING_TIMER_RESOLUTION, sizeof(_timerResolution), &_timerResolution, nullptr));
 
-		_maxWorkGroupSize = std::min(_maxWorkGroupSize, 256);
+		if(_maxWorkGroupSize > 256)
+			_maxWorkGroupSize = 256;
 
 		if (verbose)
 		{
