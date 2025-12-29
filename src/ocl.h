@@ -282,7 +282,7 @@ private:
 #if defined(ocl_debug)
 	const size_t _d;
 #endif
-	bool _profile = false;
+	bool _profile = true;
 #if defined(__APPLE__)
 	bool _isSync = true;
 #else
@@ -336,6 +336,8 @@ public:
 		cl_ulong memConstSize; oclFatal(clGetDeviceInfo(_device, CL_DEVICE_MAX_CONSTANT_BUFFER_SIZE, sizeof(memConstSize), &memConstSize, nullptr));
 		oclFatal(clGetDeviceInfo(_device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(_maxWorkGroupSize), &_maxWorkGroupSize, nullptr));
 		oclFatal(clGetDeviceInfo(_device, CL_DEVICE_PROFILING_TIMER_RESOLUTION, sizeof(_timerResolution), &_timerResolution, nullptr));
+
+		_maxWorkGroupSize = std::min(_maxWorkGroupSize, 256);
 
 		if (verbose)
 		{
