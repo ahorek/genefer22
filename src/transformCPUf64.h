@@ -868,7 +868,7 @@ public:
 		}
 	}
 
-	void set(const uint32_t a) override
+	void set(const int32_t a) override
 	{
 		Vc * const z = (Vc *)&_mem[zOffset];
 		z[0] = Vc(a);
@@ -1014,7 +1014,11 @@ inline transform * create_transformCPUf64(const uint32_t b, const uint32_t n, co
 	else if (n == 19) pTransform = new transformCPUf64<(1 << 19), VSIZE, true>(b, n, num_threads, num_regs, checkError);
 	else if (n == 20) pTransform = new transformCPUf64<(1 << 20), VSIZE, true>(b, n, num_threads, num_regs, checkError);
 	else if (n == 21) pTransform = new transformCPUf64<(1 << 21), VSIZE, true>(b, n, num_threads, num_regs, checkError);
-	else if (n == 22) pTransform = new transformCPUf64<(1 << 22), VSIZE, true>(b, n, num_threads, num_regs, checkError);
+	else if (n == 22)
+	{
+		if (b < 846398) pTransform = new transformCPUf64<(1 << 21), VSIZE, false>(b, n, num_threads, num_regs, true);
+		else            pTransform = new transformCPUf64<(1 << 22), VSIZE, true>(b, n, num_threads, num_regs, checkError);
+	}
 	else if (n == 23) pTransform = new transformCPUf64<(1 << 22), VSIZE, false>(b, n, num_threads, num_regs, checkError);
 #endif
 
