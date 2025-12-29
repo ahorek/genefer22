@@ -345,11 +345,11 @@ public:
 			std::ostringstream ssd;
 			ssd << "Running on device '" << deviceName << "', vendor '" << deviceVendor
 				<< "', version '" << deviceVersion << "', driver '" << driverVersion << "'";
-#if defined(ocl_debug)
+//#if defined(ocl_debug)
 			ssd << std::endl << computeUnits << " compUnits @ " << maxClockFrequency << "MHz, mem=" << (memSize >> 20) << "MB, cache="
 			 	<< (memCacheSize >> 10) << "kB, cacheLine=" << memCacheLineSize << "B, localMem=" << (_localMemSize >> 10)
 			 	<< "kB, constMem=" << (memConstSize >> 10) << "kB, maxWorkGroup=" << _maxWorkGroupSize << ".";
-#endif
+//#endif
 			pio::print(ssd.str());
 		}
 
@@ -379,7 +379,7 @@ public:
 	}
 
 public:
-	size_t getMaxWorkGroupSize() const { return _maxWorkGroupSize; }
+	size_t getMaxWorkGroupSize() const { return 256; }
 	size_t getLocalMemSize() const { return _localMemSize; }
 	size_t getTimerResolution() const { return _timerResolution; }
 	bool isIntel() const { return (_vendor == EVendor::INTEL); }
