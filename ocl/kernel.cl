@@ -1380,12 +1380,7 @@ void mul8(__global VTYPE * restrict const zg, __global const VTYPE * restrict co
 
 #define B_64	(64 / 4)
 
-#if MAX_WG_SZ >= B_64 * CHUNK64
-#define ATTR_64() \
-	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))
-#else
 #define ATTR_64()
-#endif
 
 #define FORWARD_64() \
 	const sz_t k4 = ((4 * threadIdx) & ~(4 * 4 - 1)) + (threadIdx % 4); \
@@ -1480,12 +1475,7 @@ void backward64_11(__global VTYPE * restrict const zg, __global const genefer_ui
 
 #define B_256	(256 / 4)
 
-#if MAX_WG_SZ >= B_256 * CHUNK256
-#define ATTR_256() \
-	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))
-#else
 #define ATTR_256()
-#endif
 
 #define FORWARD_256() \
 	const sz_t k16 = ((4 * threadIdx) & ~(4 * 16 - 1)) + (threadIdx % 16); \
@@ -1546,12 +1536,7 @@ void backward256_0(__global VTYPE * restrict const zg, __global const genefer_ui
 
 #define B_1024	(1024 / 4)
 
-#if MAX_WG_SZ >= B_1024 * CHUNK1024
-#define ATTR_1024() \
-	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))
-#else
 #define ATTR_1024()
-#endif
 
 #define FORWARD_1024() \
 	const sz_t k64 = ((4 * threadIdx) & ~(4 * 64 - 1)) + (threadIdx % 64); \
@@ -1634,9 +1619,6 @@ void backward1024_0(__global VTYPE * restrict const zg, __global const genefer_u
 	__local VTYPE * const Z4 = &Z32[4 * i8];
 
 __kernel
-#if MAX_WG_SZ >= L32S / 4 * BLK32
-	__attribute__((reqd_work_group_size(L32S / 4 * BLK32, 1, 1)))
-#endif
 void square32(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_32();
@@ -1672,9 +1654,6 @@ void square32(__global VTYPE * restrict const zg, __global const genefer_uint32 
 	__local VTYPE * const Z4 = &Z64[4 * i16];
 
 __kernel
-#if MAX_WG_SZ >= L64S / 4 * BLK64
-	__attribute__((reqd_work_group_size(L64S / 4 * BLK64, 1, 1)))
-#endif
 void square64(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_64();
@@ -1708,9 +1687,6 @@ void square64(__global VTYPE * restrict const zg, __global const genefer_uint32 
 	__local VTYPE * const Z4 = &Z128[4 * i32];
 
 __kernel
-#if MAX_WG_SZ >= L128S / 4 * BLK128
-	__attribute__((reqd_work_group_size(L128S / 4 * BLK128, 1, 1)))
-#endif
 void square128(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_128();
@@ -1750,9 +1726,6 @@ void square128(__global VTYPE * restrict const zg, __global const genefer_uint32
 	__local VTYPE * const Z4 = &Z256[4 * i64];
 
 __kernel
-#if MAX_WG_SZ >= L256S / 4 * BLK256
-	__attribute__((reqd_work_group_size(L256S / 4 * BLK256, 1, 1)))
-#endif
 void square256(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_256();
@@ -1790,9 +1763,6 @@ void square256(__global VTYPE * restrict const zg, __global const genefer_uint32
 	__local VTYPE * const Z4 = &Z512[4 * i128];
 
 __kernel
-#if MAX_WG_SZ >= L512S / 4 * BLK512
-	__attribute__((reqd_work_group_size(L512S / 4 * BLK512, 1, 1)))
-#endif
 void square512(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_512();
@@ -1838,9 +1808,6 @@ void square512(__global VTYPE * restrict const zg, __global const genefer_uint32
 	__local VTYPE * const Z4 = &Z1024[4 * i256];
 
 __kernel
-#if MAX_WG_SZ >= L1024S / 4 * BLK1024
-	__attribute__((reqd_work_group_size(L1024S / 4 * BLK1024, 1, 1)))
-#endif
 void square1024(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_1024();
@@ -1880,9 +1847,6 @@ void square1024(__global VTYPE * restrict const zg, __global const genefer_uint3
 	__local VTYPE * const Z4 = &Z[4 * i512];
 
 __kernel
-#if MAX_WG_SZ >= L2048S / 4
-	__attribute__((reqd_work_group_size(L2048S / 4, 1, 1)))
-#endif
 void square2048(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_2048();
@@ -1928,9 +1892,6 @@ void square2048(__global VTYPE * restrict const zg, __global const genefer_uint3
 	__local VTYPE * const Z4 = &Z[4 * i1024];
 
 __kernel
-#if MAX_WG_SZ >= L4096S / 4
-	__attribute__((reqd_work_group_size(L4096S / 4, 1, 1)))
-#endif
 void square4096(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_4096();
@@ -1951,9 +1912,6 @@ void square4096(__global VTYPE * restrict const zg, __global const genefer_uint3
 // -----------------
 
 __kernel
-#if MAX_WG_SZ >= L32S / 4 * BLK32
-	__attribute__((reqd_work_group_size(L32S / 4 * BLK32, 1, 1)))
-#endif
 void fwd32p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_32();
@@ -1968,9 +1926,6 @@ void fwd32p(__global VTYPE * restrict const zg, __global const genefer_uint32 * 
 }
 
 __kernel
-#if MAX_WG_SZ >= L64S / 4 * BLK64
-	__attribute__((reqd_work_group_size(L64S / 4 * BLK64, 1, 1)))
-#endif
 void fwd64p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_64();
@@ -1981,9 +1936,6 @@ void fwd64p(__global VTYPE * restrict const zg, __global const genefer_uint32 * 
 }
 
 __kernel
-#if MAX_WG_SZ >= L128S / 4 * BLK128
-	__attribute__((reqd_work_group_size(L128S / 4 * BLK128, 1, 1)))
-#endif
 void fwd128p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_128();
@@ -1999,9 +1951,6 @@ void fwd128p(__global VTYPE * restrict const zg, __global const genefer_uint32 *
 }
 
 __kernel
-#if MAX_WG_SZ >= L256S / 4 * BLK256
-	__attribute__((reqd_work_group_size(L256S / 4 * BLK256, 1, 1)))
-#endif
 void fwd256p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_256();
@@ -2013,9 +1962,6 @@ void fwd256p(__global VTYPE * restrict const zg, __global const genefer_uint32 *
 }
 
 __kernel
-#if MAX_WG_SZ >= L512S / 4 * BLK512
-	__attribute__((reqd_work_group_size(L512S / 4 * BLK512, 1, 1)))
-#endif
 void fwd512p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_512();
@@ -2032,9 +1978,6 @@ void fwd512p(__global VTYPE * restrict const zg, __global const genefer_uint32 *
 }
 
 __kernel
-#if MAX_WG_SZ >= L1024S / 4 * BLK1024
-	__attribute__((reqd_work_group_size(L1024S / 4 * BLK1024, 1, 1)))
-#endif
 void fwd1024p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_1024();
@@ -2047,9 +1990,6 @@ void fwd1024p(__global VTYPE * restrict const zg, __global const genefer_uint32 
 }
 
 __kernel
-#if MAX_WG_SZ >= L2048S / 4
-	__attribute__((reqd_work_group_size(L2048S / 4, 1, 1)))
-#endif
 void fwd2048p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_2048();
@@ -2067,9 +2007,6 @@ void fwd2048p(__global VTYPE * restrict const zg, __global const genefer_uint32 
 }
 
 __kernel
-#if MAX_WG_SZ >= L4096S / 4
-	__attribute__((reqd_work_group_size(L4096S / 4, 1, 1)))
-#endif
 void fwd4096p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_4096();
@@ -2085,9 +2022,6 @@ void fwd4096p(__global VTYPE * restrict const zg, __global const genefer_uint32 
 // -----------------
 
 __kernel
-#if MAX_WG_SZ >= L32S / 4 * BLK32
-	__attribute__((reqd_work_group_size(L32S / 4 * BLK32, 1, 1)))
-#endif
 void mul32(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_32();
@@ -2106,9 +2040,6 @@ void mul32(__global VTYPE * restrict const zg, __global const VTYPE * restrict c
 }
 
 __kernel
-#if MAX_WG_SZ >= L64S / 4 * BLK64
-	__attribute__((reqd_work_group_size(L64S / 4 * BLK64, 1, 1)))
-#endif
 void mul64(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_64();
@@ -2123,9 +2054,6 @@ void mul64(__global VTYPE * restrict const zg, __global const VTYPE * restrict c
 }
 
 __kernel
-#if MAX_WG_SZ >= L128S / 4 * BLK128
-	__attribute__((reqd_work_group_size(L128S / 4 * BLK128, 1, 1)))
-#endif
 void mul128(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_128();
@@ -2146,9 +2074,6 @@ void mul128(__global VTYPE * restrict const zg, __global const VTYPE * restrict 
 }
 
 __kernel
-#if MAX_WG_SZ >= L256S / 4 * BLK256
-	__attribute__((reqd_work_group_size(L256S / 4 * BLK256, 1, 1)))
-#endif
 void mul256(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_256();
@@ -2165,9 +2090,6 @@ void mul256(__global VTYPE * restrict const zg, __global const VTYPE * restrict 
 }
 
 __kernel
-#if MAX_WG_SZ >= L512S / 4 * BLK512
-	__attribute__((reqd_work_group_size(L512S / 4 * BLK512, 1, 1)))
-#endif
 void mul512(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_512();
@@ -2190,9 +2112,6 @@ void mul512(__global VTYPE * restrict const zg, __global const VTYPE * restrict 
 }
 
 __kernel
-#if MAX_WG_SZ >= L1024S / 4 * BLK1024
-	__attribute__((reqd_work_group_size(L1024S / 4 * BLK1024, 1, 1)))
-#endif
 void mul1024(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_1024();
@@ -2211,9 +2130,6 @@ void mul1024(__global VTYPE * restrict const zg, __global const VTYPE * restrict
 }
 
 __kernel
-#if MAX_WG_SZ >= L2048S / 4
-	__attribute__((reqd_work_group_size(L2048S / 4, 1, 1)))
-#endif
 void mul2048(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_2048();
@@ -2238,9 +2154,6 @@ void mul2048(__global VTYPE * restrict const zg, __global const VTYPE * restrict
 }
 
 __kernel
-#if MAX_WG_SZ >= L4096S / 4
-	__attribute__((reqd_work_group_size(L4096S / 4, 1, 1)))
-#endif
 void mul4096(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)
 {
 	DECLARE_VAR_4096();
@@ -2421,7 +2334,7 @@ INLINE void normalize_2(__global genefer_uint32_4 * restrict const zi, __local g
 	write_rns(zi, ro);
 }
 
-__kernel __attribute__((reqd_work_group_size(NORM_WG_SZ, 1, 1)))
+__kernel
 void normalize1(__global genefer_uint32_4 * restrict const z, __global genefer_int64 * restrict const c,
 	const genefer_uint32 b, const genefer_uint32 b_inv, const int b_s, const genefer_int32 dup)
 {
@@ -2458,7 +2371,7 @@ void normalize2(__global genefer_uint32_4 * restrict const z, __global const gen
 	write_rns(zi, r);
 }
 
-__kernel __attribute__((reqd_work_group_size(NORM_WG_SZ, 1, 1)))
+__kernel
 void mulscalar(__global genefer_uint32_4 * restrict const z, __global genefer_int64 * restrict const c,
 	const genefer_uint32 b, const genefer_uint32 b_inv, const int b_s, const genefer_int32 a)
 {

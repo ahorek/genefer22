@@ -1392,12 +1392,7 @@ static const char * const src_ocl_kernel = \
 "\n" \
 "#define B_64	(64 / 4)\n" \
 "\n" \
-"#if MAX_WG_SZ >= B_64 * CHUNK64\n" \
-"#define ATTR_64() \\\n" \
-"	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))\n" \
-"#else\n" \
 "#define ATTR_64()\n" \
-"#endif\n" \
 "\n" \
 "#define FORWARD_64() \\\n" \
 "	const sz_t k4 = ((4 * threadIdx) & ~(4 * 4 - 1)) + (threadIdx % 4); \\\n" \
@@ -1492,12 +1487,7 @@ static const char * const src_ocl_kernel = \
 "\n" \
 "#define B_256	(256 / 4)\n" \
 "\n" \
-"#if MAX_WG_SZ >= B_256 * CHUNK256\n" \
-"#define ATTR_256() \\\n" \
-"	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))\n" \
-"#else\n" \
 "#define ATTR_256()\n" \
-"#endif\n" \
 "\n" \
 "#define FORWARD_256() \\\n" \
 "	const sz_t k16 = ((4 * threadIdx) & ~(4 * 16 - 1)) + (threadIdx % 16); \\\n" \
@@ -1558,12 +1548,7 @@ static const char * const src_ocl_kernel = \
 "\n" \
 "#define B_1024	(1024 / 4)\n" \
 "\n" \
-"#if MAX_WG_SZ >= B_1024 * CHUNK1024\n" \
-"#define ATTR_1024() \\\n" \
-"	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))\n" \
-"#else\n" \
 "#define ATTR_1024()\n" \
-"#endif\n" \
 "\n" \
 "#define FORWARD_1024() \\\n" \
 "	const sz_t k64 = ((4 * threadIdx) & ~(4 * 64 - 1)) + (threadIdx % 64); \\\n" \
@@ -1646,9 +1631,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z32[4 * i8];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L32S / 4 * BLK32\n" \
-"	__attribute__((reqd_work_group_size(L32S / 4 * BLK32, 1, 1)))\n" \
-"#endif\n" \
 "void square32(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_32();\n" \
@@ -1684,9 +1666,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z64[4 * i16];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L64S / 4 * BLK64\n" \
-"	__attribute__((reqd_work_group_size(L64S / 4 * BLK64, 1, 1)))\n" \
-"#endif\n" \
 "void square64(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_64();\n" \
@@ -1720,9 +1699,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z128[4 * i32];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L128S / 4 * BLK128\n" \
-"	__attribute__((reqd_work_group_size(L128S / 4 * BLK128, 1, 1)))\n" \
-"#endif\n" \
 "void square128(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_128();\n" \
@@ -1762,9 +1738,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z256[4 * i64];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L256S / 4 * BLK256\n" \
-"	__attribute__((reqd_work_group_size(L256S / 4 * BLK256, 1, 1)))\n" \
-"#endif\n" \
 "void square256(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_256();\n" \
@@ -1802,9 +1775,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z512[4 * i128];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L512S / 4 * BLK512\n" \
-"	__attribute__((reqd_work_group_size(L512S / 4 * BLK512, 1, 1)))\n" \
-"#endif\n" \
 "void square512(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -1850,9 +1820,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z1024[4 * i256];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L1024S / 4 * BLK1024\n" \
-"	__attribute__((reqd_work_group_size(L1024S / 4 * BLK1024, 1, 1)))\n" \
-"#endif\n" \
 "void square1024(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -1892,9 +1859,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z[4 * i512];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L2048S / 4\n" \
-"	__attribute__((reqd_work_group_size(L2048S / 4, 1, 1)))\n" \
-"#endif\n" \
 "void square2048(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
@@ -1940,9 +1904,6 @@ static const char * const src_ocl_kernel = \
 "	__local VTYPE * const Z4 = &Z[4 * i1024];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L4096S / 4\n" \
-"	__attribute__((reqd_work_group_size(L4096S / 4, 1, 1)))\n" \
-"#endif\n" \
 "void square4096(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_4096();\n" \
@@ -1963,9 +1924,6 @@ static const char * const src_ocl_kernel = \
 "// -----------------\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L32S / 4 * BLK32\n" \
-"	__attribute__((reqd_work_group_size(L32S / 4 * BLK32, 1, 1)))\n" \
-"#endif\n" \
 "void fwd32p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_32();\n" \
@@ -1980,9 +1938,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L64S / 4 * BLK64\n" \
-"	__attribute__((reqd_work_group_size(L64S / 4 * BLK64, 1, 1)))\n" \
-"#endif\n" \
 "void fwd64p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_64();\n" \
@@ -1993,9 +1948,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L128S / 4 * BLK128\n" \
-"	__attribute__((reqd_work_group_size(L128S / 4 * BLK128, 1, 1)))\n" \
-"#endif\n" \
 "void fwd128p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_128();\n" \
@@ -2011,9 +1963,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L256S / 4 * BLK256\n" \
-"	__attribute__((reqd_work_group_size(L256S / 4 * BLK256, 1, 1)))\n" \
-"#endif\n" \
 "void fwd256p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_256();\n" \
@@ -2025,9 +1974,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L512S / 4 * BLK512\n" \
-"	__attribute__((reqd_work_group_size(L512S / 4 * BLK512, 1, 1)))\n" \
-"#endif\n" \
 "void fwd512p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -2044,9 +1990,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L1024S / 4 * BLK1024\n" \
-"	__attribute__((reqd_work_group_size(L1024S / 4 * BLK1024, 1, 1)))\n" \
-"#endif\n" \
 "void fwd1024p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -2059,9 +2002,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L2048S / 4\n" \
-"	__attribute__((reqd_work_group_size(L2048S / 4, 1, 1)))\n" \
-"#endif\n" \
 "void fwd2048p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
@@ -2079,9 +2019,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L4096S / 4\n" \
-"	__attribute__((reqd_work_group_size(L4096S / 4, 1, 1)))\n" \
-"#endif\n" \
 "void fwd4096p(__global VTYPE * restrict const zg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_4096();\n" \
@@ -2097,9 +2034,6 @@ static const char * const src_ocl_kernel = \
 "// -----------------\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L32S / 4 * BLK32\n" \
-"	__attribute__((reqd_work_group_size(L32S / 4 * BLK32, 1, 1)))\n" \
-"#endif\n" \
 "void mul32(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_32();\n" \
@@ -2118,9 +2052,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L64S / 4 * BLK64\n" \
-"	__attribute__((reqd_work_group_size(L64S / 4 * BLK64, 1, 1)))\n" \
-"#endif\n" \
 "void mul64(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_64();\n" \
@@ -2135,9 +2066,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L128S / 4 * BLK128\n" \
-"	__attribute__((reqd_work_group_size(L128S / 4 * BLK128, 1, 1)))\n" \
-"#endif\n" \
 "void mul128(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_128();\n" \
@@ -2158,9 +2086,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L256S / 4 * BLK256\n" \
-"	__attribute__((reqd_work_group_size(L256S / 4 * BLK256, 1, 1)))\n" \
-"#endif\n" \
 "void mul256(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_256();\n" \
@@ -2177,9 +2102,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L512S / 4 * BLK512\n" \
-"	__attribute__((reqd_work_group_size(L512S / 4 * BLK512, 1, 1)))\n" \
-"#endif\n" \
 "void mul512(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -2202,9 +2124,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L1024S / 4 * BLK1024\n" \
-"	__attribute__((reqd_work_group_size(L1024S / 4 * BLK1024, 1, 1)))\n" \
-"#endif\n" \
 "void mul1024(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -2223,9 +2142,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L2048S / 4\n" \
-"	__attribute__((reqd_work_group_size(L2048S / 4, 1, 1)))\n" \
-"#endif\n" \
 "void mul2048(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
@@ -2250,9 +2166,6 @@ static const char * const src_ocl_kernel = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WG_SZ >= L4096S / 4\n" \
-"	__attribute__((reqd_work_group_size(L4096S / 4, 1, 1)))\n" \
-"#endif\n" \
 "void mul4096(__global VTYPE * restrict const zg, __global const VTYPE * restrict const zpg, __global const genefer_uint32 * restrict const wg)\n" \
 "{\n" \
 "	DECLARE_VAR_4096();\n" \
@@ -2433,7 +2346,7 @@ static const char * const src_ocl_kernel = \
 "	write_rns(zi, ro);\n" \
 "}\n" \
 "\n" \
-"__kernel __attribute__((reqd_work_group_size(NORM_WG_SZ, 1, 1)))\n" \
+"__kernel\n" \
 "void normalize1(__global genefer_uint32_4 * restrict const z, __global genefer_int64 * restrict const c,\n" \
 "	const genefer_uint32 b, const genefer_uint32 b_inv, const int b_s, const genefer_int32 dup)\n" \
 "{\n" \
@@ -2470,7 +2383,7 @@ static const char * const src_ocl_kernel = \
 "	write_rns(zi, r);\n" \
 "}\n" \
 "\n" \
-"__kernel __attribute__((reqd_work_group_size(NORM_WG_SZ, 1, 1)))\n" \
+"__kernel\n" \
 "void mulscalar(__global genefer_uint32_4 * restrict const z, __global genefer_int64 * restrict const c,\n" \
 "	const genefer_uint32 b, const genefer_uint32 b_inv, const int b_s, const genefer_int32 a)\n" \
 "{\n" \
