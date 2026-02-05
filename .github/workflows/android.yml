@@ -4,10 +4,10 @@ on: [push, pull_request]
 
 env:
   BOINC_DIR: ./boinc
-  NDK_VERSION: android-ndk-r27c
-  NDK_ZIP: android-ndk-r27c-linux.zip
-  NDK_URL: https://dl.google.com/android/repository/android-ndk-r27c-linux.zip
-  NDK_BIN: /home/runner/work/genefer22/genefer22/android-ndk-r27c/toolchains/llvm/prebuilt/linux-x86_64/bin
+  NDK_VERSION: android-ndk-r29
+  NDK_ZIP: android-ndk-r29-linux.zip
+  NDK_URL: https://dl.google.com/android/repository/android-ndk-r29-linux.zip
+  NDK_BIN: /home/runner/work/genefer22/genefer22/android-ndk-r29/toolchains/llvm/prebuilt/linux-x86_64/bin
   CC: aarch64-linux-android34-clang
   CXX: aarch64-linux-android34-clang++
 
