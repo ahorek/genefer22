@@ -1,0 +1,67 @@
+name: aarch64
+
+on: [push, pull_request]
+
+env:
+  BOINC_DIR: ./boinc
+  NDK_VERSION: android-ndk-r27c
+  NDK_ZIP: android-ndk-r27c-linux.zip
+  NDK_URL: https://dl.google.com/android/repository/android-ndk-r27c-linux.zip
+  NDK_BIN: /home/runner/work/genefer22/genefer22/android-ndk-r27c/toolchains/llvm/prebuilt/linux-x86_64/bin
+  CC: aarch64-linux-android34-clang
+  CXX: aarch64-linux-android34-clang++
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: android / ubuntu-latest
+
+    defaults:
+      run:
+        shell: bash
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download and extract NDK
+        run: |
+          wget $NDK_URL
+          unzip -qq $NDK_ZIP
+
+      - name: Print GCC version
+        run: |
+          export PATH="$NDK_BIN:$PATH"
+          ${CC} -v
+
+      - name: Build BOINC
+        run: |
+          export PATH="$NDK_BIN:$PATH"
+          cd ..
+          git clone --depth 1 https://github.com/BOINC/boinc.git
+          cd boinc
+          ./_autosetup
+          ./configure --host=aarch64-linux --with-boinc-platform="aarch64-android-linux-gnu" --disable-server --disable-manager --disable-client --enable-static CXXFLAGS="-O3"
+          make -j
+
+      - name: Build GMP
+        run: |
+          export PATH="$NDK_BIN:$PATH"
+          git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
+          cd gmp-6.3
+          ./.bootstrap
+          ./configure --host=aarch64-linux-android --prefix=${GITHUB_WORKSPACE}/../gmp
+          make -j
+          make install
+
+      - name: Build project
+        working-directory: ./genefer
+        run: |
+          export PATH="$NDK_BIN:$PATH"
+          make -f Makefile_androidARM64 -j
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-latest
+          retention-days: 1
+          path: ./bin/*
