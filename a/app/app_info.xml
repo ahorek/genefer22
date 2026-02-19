@@ -1,0 +1,50 @@
+<app_info>
+
+<app>
+    <name>genefer18</name>
+    <user_friendly_name>GFN-18</user_friendly_name>
+    <fraction_done_exact/>
+</app>
+
+<file_info>
+    <name>genefer_gcc</name>
+    <executable/>
+</file_info>
+
+<file_info>
+    <name>genefer_gcc_g</name>
+    <executable/>
+</file_info>
+
+<app_version>
+    <app_name>genefer18</app_name>
+    <avg_ncpus>6</avg_ncpus>
+    <cmdline>-t 6</cmdline>
+    <version_num>402</version_num>
+    <api_version>7.20.2</api_version>
+    <file_ref>
+	<file_name>genefer_gcc</file_name>
+	<main_program/>
+    </file_ref>
+    <plan_class>cpuGFN18_mt</plan_class>
+</app_version>
+
+<app_version>
+    <app_name>genefer18</app_name>
+    <cmdline></cmdline>
+    <version_num>402</version_num>
+    <api_version>7.20.2</api_version>
+    <file_ref>
+	<file_name>genefer_gcc_g</file_name>
+	<main_program/>
+    </file_ref>
+    <plan_class>openclatiGFN18</plan_class>
+    <coproc>
+	<type>ATI</type>
+	<count>1.000000</count>
+    </coproc>
+    <avg_ncpus>0.1</avg_ncpus>
+    <max_ncpus>0.1</max_ncpus>
+</app_version>
+
+</app_info>
