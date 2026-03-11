@@ -12,7 +12,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <vector>
 
 #if defined(_WIN32)
-#include <Windows.h>
+#include <windows.h>
 #else
 #include <signal.h>
 #endif
