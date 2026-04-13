@@ -17,7 +17,14 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #if defined(__aarch64__)
 inline bool cpu_supports_sve()
 {
-return false;
+#if defined(__clang__) && (__clang_major__ >= 19)
+	return __builtin_cpu_supports("sve");
+#else
+	uint64_t r = 0;
+	__asm__ __volatile__ ("mrs %0, ID_AA64PFR0_EL1" : "=r"(r));
+	// SVE, bits [35:32] of ID_AA64PFR0_EL1
+	return (((r >> 32) & 0xf) >= 1);
+#endif
 }
  #endif
 
@@ -62,6 +69,8 @@ private:
 	static transform * create_neon(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
 	static size_t get_sve_size();
 	static transform * create_sve128(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
+	static transform * create_sve256(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
+	static transform * create_sve512(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
 #else
 	static transform * create_i32(const uint32_t b, const uint32_t n, const size_t num_regs);
 	static transform * create_sse2(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
@@ -72,23 +81,6 @@ private:
 	static transform * create_512(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
 #endif	
 #endif
-
-protected:
-	static void * alignNew(const size_t size, const size_t alignment, const size_t offset = 0)
-	{
-		char * const allocPtr = new char[size + alignment + offset + sizeof(size_t)];
-		const size_t addr = size_t(allocPtr) + alignment + sizeof(size_t);
-		size_t * const ptr = (size_t *)(addr - addr % alignment + offset);
-		ptr[-1] = size_t(allocPtr);
-		return (void *)(ptr);
-	}
-
-protected: 
-	static void alignDelete(void * const ptr)
-	{
-		char * const allocPtr = (char *)((size_t *)(ptr))[-1];
-		delete[] allocPtr;
-	}
 
 public:
 	transform(const size_t size, const uint32_t n, const uint32_t b, const EKind kind) : _size(size), _n(n), _b(b), _kind(kind) {}
@@ -128,6 +120,16 @@ public:
 			pTransform = transform::create_sve128(b, n, num_threads, num_regs, checkError);
 			ttype = "sve128";
 		}
+		else if ((size == 256) && (impl.empty() || (impl == "sve256")))
+		{
+			pTransform = transform::create_sve256(b, n, num_threads, num_regs, checkError);
+			ttype = "sve256";
+		}
+		else if ((size == 512) && (impl.empty() || (impl == "sve512")))
+		{
+			pTransform = transform::create_sve512(b, n, num_threads, num_regs, checkError);
+			ttype = "sve512";
+		}
 		else
 		{
 			pTransform = transform::create_neon(b, n, num_threads, num_regs, checkError);
@@ -143,7 +145,7 @@ public:
 		}
 		else
 #endif
-		     if (__builtin_cpu_supports("fma") && (impl.empty() || (impl == "fma")))
+		if (__builtin_cpu_supports("fma") && (impl.empty() || (impl == "fma")))
 		{
 			pTransform = transform::create_fma(b, n, num_threads, num_regs, checkError);
 			ttype = "fma";

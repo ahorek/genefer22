@@ -9,6 +9,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <cstdint>
 #include <cmath>
+#include <algorithm>
 
 #include "simd128d.h"
 #include "simd256d.h"
@@ -37,66 +38,9 @@ struct Complex
 
 // Is not used because of full template specialization
 template<size_t N>
-class Vd
-{
-private:
-	double __attribute__((aligned(sizeof(double) * N))) r[N];
+class Vd {};
 
-public:
-	finline explicit Vd() {}
-	finline explicit Vd(const double & f) { r[0] = f; for (size_t i = 1; i < N; ++i) r[i] = 0.0; }
-	finline Vd(const Vd & rhs) { for (size_t i = 0; i < N; ++i) r[i] = rhs.r[i]; }
-	finline Vd & operator=(const Vd & rhs) { for (size_t i = 0; i < N; ++i) r[i] = rhs.r[i]; return *this; }
-
-	finline static Vd broadcast(const double & f) { Vd vd; for (size_t i = 0; i < N; ++i) vd.r[i] = f; return vd; }
-	finline static Vd broadcast(const double & f_l, const double & f_h)
-	{
-		Vd vd;
-		for (size_t i = 0; i < N / 2; ++i) vd.r[i + 0 * N / 2] = f_l;
-		for (size_t i = 0; i < N / 2; ++i) vd.r[i + 1 * N / 2] = f_h;
-		return vd;
-	}
-
-	finline double operator[](const size_t i) const { return r[i]; }
-	finline void set(const size_t i, const double & f) { r[i] = f; }
-
-	finline bool isZero() const { bool zero = true; for (size_t i = 0; i < N; ++i) zero &= (r[i] == 0.0); return zero; }
-
-	finline Vd operator-() const { Vd vd; for (size_t i = 0; i < N; ++i) vd.r[i] = -r[i]; return vd; }
-
-	finline Vd & operator+=(const Vd & rhs) { for (size_t i = 0; i < N; ++i) r[i] += rhs.r[i]; return *this; }
-	finline Vd & operator-=(const Vd & rhs) { for (size_t i = 0; i < N; ++i) r[i] -= rhs.r[i]; return *this; }
-	finline Vd & operator*=(const Vd & rhs) { for (size_t i = 0; i < N; ++i) r[i] *= rhs.r[i]; return *this; }
-
-	finline Vd operator+(const Vd & rhs) const { Vd vd = *this; vd += rhs; return vd; }
-	finline Vd operator-(const Vd & rhs) const { Vd vd = *this; vd -= rhs; return vd; }
-	finline Vd operator*(const Vd & rhs) const { Vd vd = *this; vd *= rhs; return vd; }
-
-	finline static Vd addmul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(vd0 + vd1 * vd2); }
-	finline static Vd submul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(vd0 - vd1 * vd2); }
-
-	void shift(const double f) { for (size_t i = N - 1; i > 0; --i) r[i] = r[i - 1]; r[0] = f; }
-
-	finline Vd round() const { Vd vd; for (size_t i = 0; i < N; ++i) vd.r[i] = std::round(r[i]); return vd; }
-
-	finline Vd abs() const { Vd vd; for (size_t i = 0; i < N; ++i) vd.r[i] = std::fabs(r[i]); return vd; }
-	finline Vd & max(const Vd & rhs) { for (size_t i = 0; i < N; ++i) r[i] = std::max(r[i], rhs.r[i]); return *this; }
-	finline double max() const { double m = r[0]; for (size_t i = 1; i < N; ++i) m = std::max(m, r[i]); return m; }
-
-	finline void interleave(Vd & rhs) { for (size_t i = 0; i < N / 2; ++i) { std::swap(r[i + N / 2], rhs.r[i]); } }	// N = 8
-
-	finline static void transpose(Vd vd[N])
-	{
-		for (size_t i = 0; i < N; ++i)
-		{
-			for (size_t j = 0; j < i; ++j)
-			{
-				std::swap(vd[i].r[j], vd[j].r[i]);
-			}
-		}
-	}
-};
-
+#if !defined(__ARM_FEATURE_SVE) || (__ARM_FEATURE_SVE_BITS == 128)
 template<>
 class Vd<2>
 {
@@ -139,14 +83,15 @@ public:
 
 	finline Vd abs() const { return Vd(abs_128d(r)); }
 	finline Vd & max(const Vd & rhs) { r = max_128d(r, rhs.r); return *this; }
-	finline double max() const { return std::max(r[0], r[1]); }
+	finline double max() const { return reduce_max_128d(r); }
 
 	finline void interleave(Vd &) {}	// unused
 
 	finline static void transpose(Vd vd[2]) { transpose_128d(vd[0].r, vd[1].r); }
 };
+#endif
 
-#if defined(__AVX__)
+#if defined(__AVX__) || (defined(__ARM_FEATURE_SVE) && (__ARM_FEATURE_SVE_BITS == 256))
 template<>
 class Vd<4>
 {
@@ -186,8 +131,8 @@ public:
 	finline Vd operator-(const Vd & rhs) const { Vd vd = *this; vd -= rhs; return vd; }
 	finline Vd operator*(const Vd & rhs) const { Vd vd = *this; vd *= rhs; return vd; }
 
-	finline static Vd addmul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(vd0 + vd1 * vd2); }
-	finline static Vd submul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(vd0 - vd1 * vd2); }
+	finline static Vd addmul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(addmul_256d(vd0.r, vd1.r, vd2.r)); }
+	finline static Vd submul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(submul_256d(vd0.r, vd1.r, vd2.r)); }
 
 	finline void shift(const double f) { r = (simd256d){f, r[0], r[1], r[2]}; }
 
@@ -195,7 +140,7 @@ public:
 
 	inline Vd abs() const { return Vd(abs_256d(r)); }
 	finline Vd & max(const Vd & rhs) { r = max_256d(r, rhs.r); return *this; }
-	finline double max() const { const double m01 = std::max(r[0], r[1]), m23 = std::max(r[2], r[3]); return std::max(m01, m23); }
+	finline double max() const { return reduce_max_256d(r); }
 
 	finline void interleave(Vd &) {}	// unused
 
@@ -203,7 +148,7 @@ public:
 };
 #endif
 
-#if defined(__AVX512F__)
+#if defined(__AVX512F__) || (defined(__ARM_FEATURE_SVE) && (__ARM_FEATURE_SVE_BITS == 512))
 template<>
 class Vd<8>
 {
@@ -243,8 +188,8 @@ public:
 	finline Vd operator-(const Vd & rhs) const { Vd vd = *this; vd -= rhs; return vd; }
 	finline Vd operator*(const Vd & rhs) const { Vd vd = *this; vd *= rhs; return vd; }
 
-	finline static Vd addmul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(vd0 + vd1 * vd2); }
-	finline static Vd submul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(vd0 - vd1 * vd2); }
+	finline static Vd addmul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(addmul_512d(vd0.r, vd1.r, vd2.r)); }
+	finline static Vd submul(const Vd & vd0, const Vd & vd1, const Vd & vd2) { return Vd(submul_512d(vd0.r, vd1.r, vd2.r)); }
 
 	finline void shift(const double f) { r = (simd512d){f, r[0], r[1], r[2], r[3], r[4], r[5], r[6]}; }
 

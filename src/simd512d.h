@@ -9,11 +9,81 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <cstdint>
 
-#if defined(__AVX512F__)
+#if defined(__aarch64__)
+
+#if defined(__ARM_FEATURE_SVE) && (__ARM_FEATURE_SVE_BITS == 512)	// 512-bit SVE
+
+#include <arm_sve.h>
+
+typedef svfloat64_t simd512d __attribute__((arm_sve_vector_bits(512)));
+
+inline simd512d addmul_512d(const simd512d v0, const simd512d v1, const simd512d v2)
+{
+#if defined(__clang__)
+	return svmla_f64_x(svptrue_b64(), v0, v1, v2);
+#else
+	return v0 + v1 * v2;
+#endif
+}
+
+inline simd512d submul_512d(const simd512d v0, const simd512d v1, const simd512d v2)
+{
+#if defined(__clang__)
+	return svmls_f64_x(svptrue_b64(), v0, v1, v2);
+#else
+	return v0 - v1 * v2;
+#endif
+}
+
+inline bool is_zero_512d(const simd512d v)
+{
+	return (svadda_f64(svcmpeq_f64(svptrue_b64(), v, svdup_f64(0.0)), 0.0, svdup_f64(1.0)) == 8.0);
+}
+
+inline simd512d abs_512d(const simd512d v) { return svabs_f64_x(svptrue_b64(), v); }
+
+inline simd512d max_512d(const simd512d v0, const simd512d v1) { return svmax_f64_x(svptrue_b64(), v0, v1); }
+inline double reduce_max_512d(const simd512d v) { return svmaxv_f64(svptrue_b64(), v); }
+
+inline simd512d round_512d(const simd512d v) { return svrinta_f64_x(svptrue_b64(), v); }
+
+inline void transpose_512d(simd512d & v0, simd512d & v1, simd512d & v2, simd512d & v3, simd512d & v4, simd512d & v5, simd512d & v6, simd512d & v7)
+{
+	const simd512d r0 = svzip1_f64(v0, v4), r4 = svzip2_f64(v0, v4);
+	const simd512d r1 = svzip1_f64(v1, v5), r5 = svzip2_f64(v1, v5);
+	const simd512d r2 = svzip1_f64(v2, v6), r6 = svzip2_f64(v2, v6);
+	const simd512d r3 = svzip1_f64(v3, v7), r7 = svzip2_f64(v3, v7);
+	const simd512d t0 = svzip1_f64(r0, r2), t2 = svzip2_f64(r0, r2);
+	const simd512d t1 = svzip1_f64(r1, r3), t3 = svzip2_f64(r1, r3);
+	const simd512d t4 = svzip1_f64(r4, r6), t6 = svzip2_f64(r4, r6);
+	const simd512d t5 = svzip1_f64(r5, r7), t7 = svzip2_f64(r5, r7);
+	v0 = svzip1_f64(t0, t1); v1 = svzip2_f64(t0, t1);
+	v2 = svzip1_f64(t2, t3); v3 = svzip2_f64(t2, t3);
+	v4 = svzip1_f64(t4, t5); v5 = svzip2_f64(t4, t5);
+	v6 = svzip1_f64(t6, t7); v7 = svzip2_f64(t6, t7);
+}
+
+typedef svuint64_t simd512u __attribute__((arm_sve_vector_bits(512)));
+
+inline void interleave_512d(simd512d & v0, simd512d & v1)
+{
+	const simd512d v1_lo2hi = svtbl_f64(v1, (simd512u){8, 8, 8, 8, 0, 1, 2, 3});
+	const simd512d v0_hi2lo = svtbl_f64(v0, (simd512u){4, 5, 6, 7, 8, 8, 8, 8});
+	const svbool_t mask_lo = svptrue_pat_b64(SV_VL4), mask_hi = svnot_b_z(svptrue_b64(), mask_lo);
+	v0 = svadd_f64_m(mask_lo, v1_lo2hi, v0);
+	v1 = svadd_f64_m(mask_hi, v0_hi2lo, v1);
+}
+
+#endif
+
+#elif defined(__AVX512F__)	// AVX-512
 
 #include <immintrin.h>
 
 typedef __m512d simd512d;
+
+inline simd512d addmul_512d(const simd512d v0, const simd512d v1, const simd512d v2) { return v0 + v1 * v2; }
+inline simd512d submul_512d(const simd512d v0, const simd512d v1, const simd512d v2) { return v0 - v1 * v2; }
 
 inline bool is_zero_512d(const simd512d v) { return (_mm512_cmp_pd_mask(v, _mm512_setzero_pd(), _CMP_NEQ_OQ) == 0); }
 
