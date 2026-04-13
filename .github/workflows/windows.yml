@@ -63,7 +63,7 @@ jobs:
       - name: Build project
         working-directory: ./genefer
         run: |
-          make -f makefile_win64 -j CC=x86_64-w64-mingw32-g++ OCL_LIB=/home/runner/work/genefer22/genefer22/OpenCL-ICD-Loader/build-mingw/install/lib/libOpenCL.dll.a
+          make -f makefile_windows_x64 -j CC=x86_64-w64-mingw32-g++ OCL_LIB=/home/runner/work/genefer22/genefer22/OpenCL-ICD-Loader/build-mingw/install/lib/libOpenCL.dll.a
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4

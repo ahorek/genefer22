@@ -8,13 +8,12 @@ BIN_DIR = $(ROOT_DIR)/bin
 SRC_DIR = $(ROOT_DIR)/src
 
 GMP_DIR = $(ROOT_DIR)/../gmp
-GMP_INC = -I$(GMP_DIR)
+GMP_INC = -I$(GMP_DIR)/include
 GMP_LIB = -L$(GMP_DIR)/lib -lgmp
 
 OCL_DIR = $(ROOT_DIR)/Khronos
 OCL_INC = -I$(OCL_DIR)
 OCL_LIB = -L$(OCL_DIR)/lib -lOpenCL -ldl -L$(ROOT_DIR)/Khronos/Android
-GMP_DIR = $(ROOT_DIR)/../gmp
 
 CFLAGS = -Wall -Wextra -Wsign-conversion $(GMP_INC)
 OFLAGS = -ffinite-math-only -ffp-contract=fast -fno-trapping-math -fno-signed-zeros

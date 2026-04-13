@@ -45,7 +45,7 @@ jobs:
       - name: Build project
         working-directory: ./genefer
         run: |
-          make -f Makefile_linux64 -j
+          make -f makefile_linux_x64 -j
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
