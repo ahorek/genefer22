@@ -21,9 +21,8 @@ OCL_LIB = C:/Windows/System32/OpenCL.dll
 # lib: Makefile.mingw => libboinc_api.a libboinc.a libboinc_opencl.a
 BOINC_DIR = $(ROOT_DIR)/../boinc
 BOINC_INC = -I$(BOINC_DIR) -I$(BOINC_DIR)/api -I$(BOINC_DIR)/lib -I$(BOINC_DIR)/win_build
-BOINC_LIB_DIR = $(BOINC_DIR)/lib
-BOINC_LIB = $(BOINC_LIB_DIR)/libboinc_api.a $(BOINC_LIB_DIR)/libboinc.a
-BOINC_LIB_OCL = $(BOINC_LIB_DIR)/libboinc_opencl.a
+BOINC_LIB = -L$(BOINC_DIR)/api -L$(BOINC_DIR)/lib -lboinc_api -lboinc
+BOINC_LIB_OCL = -lboinc_opencl
 
 
 GMP_DIR = $(ROOT_DIR)/../gmp
