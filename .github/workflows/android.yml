@@ -57,7 +57,7 @@ jobs:
         working-directory: ./genefer
         run: |
           export PATH="$NDK_BIN:$PATH"
-          make -f Makefile_androidARM64 -j
+          make -f makefile_android-NDK_arm -j
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
