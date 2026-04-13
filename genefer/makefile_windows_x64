@@ -26,7 +26,9 @@ BOINC_LIB = $(BOINC_LIB_DIR)/libboinc_api.a $(BOINC_LIB_DIR)/libboinc.a
 BOINC_LIB_OCL = $(BOINC_LIB_DIR)/libboinc_opencl.a
 
 
-GMP_DIR = $(ROOT_DIR)/../gmpCFLAGS = -DBOINC $(BOINC_INC) -Wall -Wextra -Wsign-conversion
+GMP_DIR = $(ROOT_DIR)/../gmp
+GMP_INC = -I$(GMP_DIR)/include
+CFLAGS = -DBOINC $(BOINC_INC) -Wall -Wextra -Wsign-conversion $(GMP_INC)
 ifeq ($(COMP), gcc)
 OFLAGS = -ffinite-math-only -frename-registers -fprefetch-loop-arrays
 else
