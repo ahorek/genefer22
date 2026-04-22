@@ -1,0 +1,57 @@
+23:52:53 (29156): Can't open init data file - running in standalone mode
+[23:52:53][29156][INFO ] Starting data processing...
+[23:52:53][29156][INFO ] Checkpoint file unavailable: p2030.1776842406.G53.17+02.80.N.b0s0g0.00000_2818.cpt (No such file or directory).
+------> Starting from scratch...
+[23:52:53][29156][INFO ] Header contents:
+------> Original WAPP file: ./p2030.20160630.G53.17+02.80.N.b0s0g0.00000_DM423.30
+------> Sample time in microseconds: 65.4762
+------> Observation time in seconds: 274.62705
+------> Time stamp (MJD): 57569.270533992458
+------> Number of samples/record: 0
+------> Center freq in MHz: 1214.289551
+------> Channel band in MHz: 0.336182022
+------> Number of channels/record: 960
+------> Nifs: 1
+------> RA (J2000): 191914.0417
+------> DEC (J2000): 191849.149502
+------> Galactic l: 0
+------> Galactic b: 0
+------> Name: G53.17+02.80.N
+------> Lagformat: 0
+------> Sum: 1
+------> Level: 3
+------> AZ at start: 0
+------> ZA at start: 0
+------> AST at start: 0
+------> LST at start: 0
+------> Project ID: --
+------> Observers: --
+------> File size (bytes): 0
+------> Data size (bytes): 0
+------> Number of samples: 4194304
+------> Trial dispersion measure: 423.3 cm^-3 pc
+------> Scale factor: 0.000995586
+[23:52:53][29156][INFO ] Seed for random number generator is 1157307324.
+[23:52:55][29156][INFO ] Derived global search parameters:
+------> f_A probability = 0.08
+------> single bin prob(P_noise > P_thr) = 1.32531e-08
+------> thr1 = 18.139
+------> thr2 = 21.241
+------> thr4 = 26.2686
+------> thr8 = 34.6478
+------> thr16 = 48.9581
+[23:58:21][29156][INFO ] Checkpoint committed!
+[00:03:52][29156][INFO ] Checkpoint committed!
+[00:09:20][29156][INFO ] Checkpoint committed!
+[00:14:50][29156][INFO ] Checkpoint committed!
+[00:20:18][29156][INFO ] Checkpoint committed!
+[00:25:44][29156][INFO ] Checkpoint committed!
+[00:31:10][29156][INFO ] Checkpoint committed!
+[00:36:39][29156][INFO ] Checkpoint committed!
+[00:42:09][29156][INFO ] Checkpoint committed!
+[00:47:39][29156][INFO ] Checkpoint committed!
+00:48:10 (29156): Can't open init data file - running in standalone mode
+[00:48:10][29156][WARN ] User/host details unavailable...
+[00:48:10][29156][INFO ] Statistics: count dirty SumSpec pages 529 (not checkpointed), Page Size 1024, fundamental_idx_hi-window_2: 329052
+[00:48:10][29156][INFO ] Data processing finished successfully!
+00:48:10 (29156): called boinc_finish(0)
