@@ -11,10 +11,9 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <cmath>
 
 #include <gmp.h>
+#include <omp.h>
 
 #include "transform.h"
-#include "alignment.h"
-#include "parallel.h"
 #include "f64vector.h"
 
 namespace transformCPU_namespace
@@ -63,65 +62,60 @@ public:
 	finline void transpose_in() { Vc::transpose_in(z); }
 	finline void transpose_out() { Vc::transpose_out(z); }
 
-	finline void fwde(const Vc & w) { Vc::fwd2(z[0], z[2], w); Vc::fwd2(z[1], z[3], w); }
-	finline void fwdo(const Vc & w) { Vc::fwd2i(z[4], z[6], w); Vc::fwd2a(z[5], z[7], w); }
-
-	finline void bwde(const Vc & w) { Vc::bck2(z[0], z[2], w); Vc::bck2(z[1], z[3], w); }
-	finline void bwdo(const Vc & w) { Vc::bck2a(z[4], z[6], w); Vc::bck2b(z[5], z[7], w); }
-	
 	finline void square4e(const Vc & w)
 	{
-		fwde(w);
-		const Vc z0 = z[0], z1 = z[1], z2 = z[2], z3 = z[3];
-		z[0] = z0.sqr() + z1.sqr().mulW(w); z[1] = (z0 + z0) * z1; z[2] = z2.sqr() - z3.sqr().mulW(w); z[3] = (z2 + z2) * z3;
-		bwde(w);
+		const Vc u0 = z[0], u2 = z[2].mulW(w), u1 = z[1], u3 = z[3].mulW(w);
+		const Vc v0 = u0 + u2, v2 = u0 - u2, v1 = u1 + u3, v3 = u1 - u3;
+		const Vc s0 = v0.sqr() + v1.sqr().mulW(w), s1 = (v0 + v0) * v1, s2 = v2.sqr() - v3.sqr().mulW(w), s3 = (v2 + v2) * v3;
+		z[0] = s0 + s2; z[2] = Vc(s0 - s2).mulWconj(w); z[1] = s1 + s3; z[3] = Vc(s1 - s3).mulWconj(w);
 	}
 
 	finline void square4o(const Vc & w)
 	{
-		fwdo(w);
-		const Vc z4 = z[4], z5 = z[5], z6 = z[6], z7 = z[7];
-		z[4] = z5.sqr().mulW(w).subi(z4.sqr()); z[5] = (z4 + z4) * z5; z[6] = z6.sqr().addi(z7.sqr().mulW(w)); z[7] = (z6 + z6) * z7;
-		bwdo(w);
+		const Vc u4 = z[4], u6 = z[6].mulW(w), u5 = z[5], u7 = z[7].mulW(w);
+		const Vc v4 = u4.addi(u6), v6 = u4.subi(u6), v5 = u5.addi(u7), v7 = u7.addi(u5);
+		const Vc s4 = v5.sqr().mulW(w).subi(v4.sqr()), s5 = (v4 + v4) * v5, s6 = v6.sqr().addi(v7.sqr().mulW(w)), s7 = (v6 + v6) * v7;
+		z[4] = s6.addi(s4); z[6] = s4.addi(s6).mulWconj(w); z[5] = s5.subi(s7); z[7] = s7.subi(s5).mulWconj(w);
 	}
 
 	finline void mul4_forward(const Vc & w)
 	{
-		fwde(w);
-		fwdo(w);
+		const Vc u0 = z[0], u2 = z[2].mulW(w), u1 = z[1], u3 = z[3].mulW(w);
+		z[0] = u0 + u2; z[2] = u0 - u2; z[1] = u1 + u3; z[3] = u1 - u3;
+		const Vc u4 = z[4], u6 = z[6].mulW(w), u5 = z[5], u7 = z[7].mulW(w);
+		z[4] = u4.addi(u6); z[6] = u4.subi(u6); z[5] = u5.addi(u7); z[7] = u7.addi(u5);
 	}
 
 	finline void mul4(const Vcx8 & rhs, const Vc & w)
 	{
-		fwde(w);
-		const Vc z0 = z[0], z1 = z[1], z2 = z[2], z3 = z[3];
-		const Vc zp0 = rhs.z[0], zp2 = rhs.z[2], zp1 = rhs.z[1], zp3 = rhs.z[3];
-		z[0] = z0 * zp0 + Vc(z1 * zp1).mulW(w); z[1] = z0 * zp1 + zp0 * z1;
-		z[2] = z2 * zp2 - Vc(z3 * zp3).mulW(w); z[3] = z2 * zp3 + zp2 * z3;
-		bwde(w);
+		const Vc u0 = z[0], u2 = z[2].mulW(w), u1 = z[1], u3 = z[3].mulW(w);
+		const Vc v0 = u0 + u2, v2 = u0 - u2, v1 = u1 + u3, v3 = u1 - u3;
+		const Vc vp0 = rhs.z[0], vp2 = rhs.z[2], vp1 = rhs.z[1], vp3 = rhs.z[3];
+		const Vc s0 = v0 * vp0 + Vc(v1 * vp1).mulW(w), s1 = v0 * vp1 + vp0 * v1;
+		const Vc s2 = v2 * vp2 - Vc(v3 * vp3).mulW(w), s3 = v2 * vp3 + vp2 * v3;
+		z[0] = s0 + s2; z[2] = Vc(s0 - s2).mulWconj(w); z[1] = s1 + s3; z[3] = Vc(s1 - s3).mulWconj(w);
 
-		fwdo(w);
-		const Vc z4 = z[4], z5 = z[5], z6 = z[6], z7 = z[7];
-		const Vc zp4 = rhs.z[4], zp6 = rhs.z[6], zp5 = rhs.z[5], zp7 = rhs.z[7];
-		z[4] = Vc(z5 * zp5).mulW(w).subi(z4 * zp4); z[5] = z4 * zp5 + zp4 * z5;
-		z[6] = Vc(z6 * zp6).addi(Vc(z7 * zp7).mulW(w)); z[7] = z6 * zp7 + zp6 * z7;
-		bwdo(w);
+		const Vc u4 = z[4], u6 = z[6].mulW(w), u5 = z[5], u7 = z[7].mulW(w);
+		const Vc v4 = u4.addi(u6), v6 = u4.subi(u6), v5 = u5.addi(u7), v7 = u7.addi(u5);
+		const Vc vp4 = rhs.z[4], vp6 = rhs.z[6], vp5 = rhs.z[5], vp7 = rhs.z[7];
+		const Vc s4 = Vc(v5 * vp5).mulW(w).subi(v4 * vp4), s5 = v4 * vp5 + vp4 * v5;
+		const Vc s6 = Vc(v6 * vp6).addi(Vc(v7 * vp7).mulW(w)), s7 = v6 * vp7 + vp6 * v7;
+		z[4] = s6.addi(s4); z[6] = s4.addi(s6).mulWconj(w); z[5] = s5.subi(s7); z[7] = s7.subi(s5).mulWconj(w);
 	}
 
 	finline Vc mul_carry(const Vc & f_prev, const double g, const double b, const double b_inv, const double t2_n)
 	{
 		Vc f = f_prev;
-		const Vd<N> vg = Vd<N>::broadcast(g), vb = Vd<N>::broadcast(b), vb_inv = Vd<N>::broadcast(b_inv), vt2_n = Vd<N>::broadcast(t2_n);
 
 		for (size_t i = 0; i < 8; ++i)
 		{
 			Vc & zi = z[i];
-			const Vc of = zi.mulS(vt2_n), o = of.round();
-			const Vc o_b = o.mulS(vb_inv).round();
-			const Vc f_i = f.addmulS(o.submulS(o_b, vb), vg);
-			const Vc f_b = f_i.mulS(vb_inv).round();
-			f = f_b.addmulS(o_b, vg);
-			zi = f_i.submulS(f_b, vb);
+			const Vc of = zi * t2_n, o = of.round();
+			const Vc o_b = Vc(o * b_inv).round();
+			const Vc f_i = f + (o - o_b * b) * g;
+			const Vc f_b = Vc(f_i * b_inv).round();
+			f = f_b + o_b * g;
+			zi = f_i - f_b * b;
 		}
 
 		return f;
@@ -130,18 +124,17 @@ public:
 	finline Vc mul_carry(const Vc & f_prev, const double g, const double b, const double b_inv, const double t2_n, Vc & err)
 	{
 		Vc f = f_prev;
-		const Vd<N> vg = Vd<N>::broadcast(g), vb = Vd<N>::broadcast(b), vb_inv = Vd<N>::broadcast(b_inv), vt2_n = Vd<N>::broadcast(t2_n);
 
 		for (size_t i = 0; i < 8; ++i)
 		{
 			Vc & zi = z[i];
-			const Vc of = zi.mulS(vt2_n), o = of.round();
+			const Vc of = zi * t2_n, o = of.round();
 			err.max(Vc(of - o).abs());
-			const Vc o_b = o.mulS(vb_inv).round();
-			const Vc f_i = f.addmulS(o.submulS(o_b, vb), vg);
-			const Vc f_b = f_i.mulS(vb_inv).round();
-			f = f_b.addmulS(o_b, vg);
-			zi = f_i.submulS(f_b, vb);
+			const Vc o_b = Vc(o * b_inv).round();
+			const Vc f_i = f + (o - o_b * b) * g;
+			const Vc f_b = Vc(f_i * b_inv).round();
+			f = f_b + o_b * g;
+			zi = f_i - f_b * b;
 		}
 
 		return f;
@@ -151,22 +144,26 @@ public:
 						   const double sb, const double sb_inv, const double sbh, const double sbl)
 	{
 		Vc f = f_prev;
-		const Vd<N> vg = Vd<N>::broadcast(g), vb = Vd<N>::broadcast(b), vb_inv = Vd<N>::broadcast(b_inv), vt2_n = Vd<N>::broadcast(t2_n);
-		const Vd<N> vsb = Vd<N>::broadcast(sb), vsb_inv = Vd<N>::broadcast(sb_inv), vsbh = Vd<N>::broadcast(sbh), vsbl = Vd<N>::broadcast(sbl);
 
 		for (size_t i = 0; i < 4; ++i)
 		{
 			Vc & z0 = z[2 * i + 0]; Vc & z1 = z[2 * i + 1];
 
-			const Vc of = z0.addmulS(z1, vsb).mulS(vt2_n), o = of.round();
-			const Vc o_b = o.mulS(vb_inv).round();
-			const Vc f_i = f.addmulS(o.submulS(o_b, vb), vg);
-			const Vc f_b = f_i.mulS(vb_inv).round();
-			const Vc r = f_i.submulS(f_b, vb);
-			f = f_b.addmulS(o_b, vg);
+			// const Vc o = Vc((z0 + z1 * sb) * t2_n).round();
+			// const Vc f_i = f + o * g;
+			// const Vc f_b = Vc(f_i * b_inv).round();
+			// const Vc r = f_i - f_b * b;
+			// f = f_b;
 
-			const Vc irh = r.mulS(vsb_inv).round();
-			z0 = r.submulS(irh, vsbh).submulS(irh, vsbl); z1 = irh;
+			const Vc of = (z0 + z1 * sb) * t2_n, o = of.round();
+			const Vc o_b = Vc(o * b_inv).round();
+			const Vc f_i = f + (o - o_b * b) * g;
+			const Vc f_b = Vc(f_i * b_inv).round();
+			const Vc r = f_i - f_b * b;
+			f = f_b + o_b * g;
+
+			const Vc irh = Vc(r * sb_inv).round();
+			z0 = (r - irh * sbh) - irh * sbl; z1 = irh;
 		}
 
 		return f;
@@ -176,24 +173,22 @@ public:
 						   const double sb_inv, const double sbh, const double sbl, Vc & err)
 	{
 		Vc f = f_prev;
-		const Vd<N> vg = Vd<N>::broadcast(g), vb = Vd<N>::broadcast(b), vb_inv = Vd<N>::broadcast(b_inv), vt2_n = Vd<N>::broadcast(t2_n);
-		const Vd<N> vsb_inv = Vd<N>::broadcast(sb_inv), vsbh = Vd<N>::broadcast(sbh), vsbl = Vd<N>::broadcast(sbl);
 
 		for (size_t i = 0; i < 4; ++i)
 		{
 			Vc & z0 = z[2 * i + 0]; Vc & z1 = z[2 * i + 1];
 
-			const Vc of = z0.addmulS(z1, vsbl).addmulS(z1, vsbh).mulS(vt2_n), o = of.round();
+			const Vc of = ((z0 + z1 * sbl) + z1 * sbh) * t2_n, o = of.round();
 			err.max(Vc(of - o).abs());
 
-			const Vc o_b = o.mulS(vb_inv).round();
-			const Vc f_i = f.addmulS(o.submulS(o_b, vb), vg);
-			const Vc f_b = f_i.mulS(vb_inv).round();
-			const Vc r = f_i.submulS(f_b, vb);
-			f = f_b.addmulS(o_b, vg);
+			const Vc o_b = Vc(o * b_inv).round();
+			const Vc f_i = f + (o - o_b * b) * g;
+			const Vc f_b = Vc(f_i * b_inv).round();
+			const Vc r = f_i - f_b * b;
+			f = f_b + o_b * g;
 
-			const Vc irh = r.mulS(vsb_inv).round();
-			z0 = r.submulS(irh, vsbh).submulS(irh, vsbl); z1 = irh;
+			const Vc irh = Vc(r * sb_inv).round();
+			z0 = (r - irh * sbh) - irh * sbl; z1 = irh;
 		}
 
 		return f;
@@ -202,14 +197,13 @@ public:
 	finline void carry(const Vc & f_i, const double b, const double b_inv)
 	{
 		Vc f = f_i;
-		const Vd<N> vb = Vd<N>::broadcast(b), vb_inv = Vd<N>::broadcast(b_inv);
 
 		for (size_t i = 0; i < 8 - 1; ++i)
 		{
 			Vc & zi = z[i];
 			f += zi.round();
-			const Vc f_o = f.mulS(vb_inv).round();
-			zi = f.submulS(f_o, vb);
+			const Vc f_o = Vc(f * b_inv).round();
+			zi = f - f_o * b;
 			f = f_o;
 			if (f.isZero()) return;
 		}
@@ -221,25 +215,23 @@ public:
 	finline void carry_i(const Vc & f_i, const double b, const double b_inv, const double sb, const double sb_inv, const double sbh, const double sbl)
 	{
 		Vc f = f_i;
-		const Vd<N> vb = Vd<N>::broadcast(b), vb_inv = Vd<N>::broadcast(b_inv);
-		const Vd<N> vsb = Vd<N>::broadcast(sb), vsb_inv = Vd<N>::broadcast(sb_inv), vsbh = Vd<N>::broadcast(sbh), vsbl = Vd<N>::broadcast(sbl);
 
 		for (size_t i = 0; i < 4 - 1; ++i)
 		{
 			Vc & z0 = z[2 * i + 0]; Vc & z1 = z[2 * i + 1];
-			f += z0.addmulS(z1, vsb).round();
-			const Vc f_o = f.mulS(vb_inv).round();
-			const Vc r = f.submulS(f_o, vb);
+			f += Vc(z0 + z1 * sb).round();
+			const Vc f_o = Vc(f * b_inv).round();
+			const Vc r = f - f_o * b;
 			f = f_o;
-			const Vc irh = r.mulS(vsb_inv).round();
-			z0 = r.submulS(irh, vsbh).submulS(irh, vsbl); z1 = irh;
+			const Vc irh = Vc(r * sb_inv).round();
+			z0 = (r - irh * sbh) - irh * sbl; z1 = irh;
 			if (f.isZero()) return;
 		}
 
 		Vc & z0 = z[2 * (4 - 1) + 0]; Vc & z1 = z[2 * (4 - 1) + 1];
-		const Vc r = f + z0.addmulS(z1, vsb).round();
-		const Vc irh = r.mulS(vsb_inv).round();
-		z0 = r.submulS(irh, vsbh).submulS(irh, vsbl); z1 = irh;
+		const Vc r = f + Vc(z0 + z1 * sb).round();
+		const Vc irh = Vc(r * sb_inv).round();
+		z0 = (r - irh * sbh) - irh * sbl; z1 = irh;
 	}
 };
 
@@ -250,8 +242,6 @@ class transformCPUf64 : public transform
 	using Vr4 = Vradix4<VSIZE>;
 	using Vr8 = Vradix8<VSIZE>;
 	using Vc8 = Vcx8<VSIZE>;
-
-	using Par = parallel<transformCPUf64>;
 
 private:
 	// Pass 1: n_io Complex (16 bytes), Pass 2/3: N / n_io Complex
@@ -276,13 +266,11 @@ private:
 	static const size_t zrOffset = zpOffset + zSize;
 
 	const size_t _num_threads;
-	Par _parallel;
 	const double _b, _b_inv, _sb, _sb_inv;
 	const size_t _mem_size, _cache_size;
-	const bool _checkError;
 	double _sbh, _sbl;
-	double _error, _g;
-	double _err_array[64];
+	bool _checkError;
+	double _error;
 	char * const _mem;
 	Vc * const _z_copy;
 
@@ -332,7 +320,6 @@ private:
 		else        Vr4::backward4_0(index(N / 4) / VSIZE, stepi, 2 * 4 / VSIZE, z);
 	}
 
-public:
 	void pass1(const size_t thread_id)
 	{
 		const Complex * const w122i = (Complex *)&_mem[wOffset];
@@ -613,12 +600,12 @@ public:
 		}
 	}
 
-	void pass2_0(const size_t thread_id)
+	double pass2_0(const size_t thread_id, const double g)
 	{
 		const Complex * const w122i = (Complex *)&_mem[wOffset];
 		Vc * const z = (Vc *)&_mem[zOffset];
 		Vc * const fc = (Vc *)&_mem[fcOffset]; Vc * const f = &fc[thread_id * n_io_inv];
-		const double b = _b, b_inv = _b_inv, sb = _sb, sb_inv = _sb_inv, sbh = _sbh, sbl = _sbl, g = _g;
+		const double b = _b, b_inv = _b_inv, sb = _sb, sb_inv = _sb_inv, sbh = _sbh, sbl = _sbl;
 		const bool checkError = _checkError;
 
 		Vc err = Vc(0.0);
@@ -656,7 +643,7 @@ public:
 			if (lh != l_min) forward_out(zl, w122i);
 		}
 
-		_err_array[thread_id] = err.max();
+		return err.max();
 	}
 
 	void pass2_1(const size_t thread_id)
@@ -692,11 +679,11 @@ public:
 	transformCPUf64(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError)
 		: transform(N, n, b, IBASE ? ((VSIZE == 2) ? EKind::IBDTvec2 : ((VSIZE == 4) ? EKind::IBDTvec4 : EKind::IBDTvec8))
 								   : ((VSIZE == 2) ? EKind::DTvec2 : ((VSIZE == 4) ? EKind::DTvec4 : EKind::DTvec8))),
-		_num_threads(num_threads), _parallel(this, num_threads - 1),
+		_num_threads(num_threads),
 		_b(b), _b_inv(1.0 / b), _sb(sqrt(static_cast<double>(b))), _sb_inv(1 / _sb),
 		_mem_size(wSize + wsSize + zSize + fcSize + zSize + (num_regs - 1) * zSize + 2 * 1024 * 1024),
 		_cache_size(wSize + wsSize + zSize + fcSize), _checkError(checkError), _error(0),
-		_mem((char *)align_new(_mem_size, 2 * 1024 * 1024)), _z_copy((Vc *)align_new(zSize, 1024))
+		_mem((char *)alignNew(_mem_size, 2 * 1024 * 1024)), _z_copy((Vc *)alignNew(zSize, 1024))
 	{
 		mpz_t sb2e64, t; mpz_init_set_ui(sb2e64, b); mpz_init(t);
 		mpz_mul_2exp(sb2e64, sb2e64, 128); mpz_sqrt(sb2e64, sb2e64);
@@ -741,8 +728,8 @@ public:
 
 	virtual ~transformCPUf64()
 	{
-		align_delete((void *)_mem);
-		align_delete((void *)_z_copy);
+		alignDelete((void *)_mem);
+		alignDelete((void *)_z_copy);
 	}
 
 	size_t getMemSize() const override { return _mem_size; }
@@ -894,15 +881,6 @@ public:
 		}
 	}
 
-	void error_update()
-	{
-		const size_t num_threads = _num_threads;
-		double err = _error;
-		const double * const e = _err_array;
-		for (size_t i = 0; i < num_threads; ++i) err = std::max(err, e[i]);
-		_error = err;
-	}
-
 	void squareDup(const bool dup) override
 	{
 		squareMul(dup ? 2 : 1);
@@ -911,42 +889,82 @@ public:
 	void squareMul(const int32_t a) override
 	{
 		const size_t num_threads = _num_threads;
-		_g = static_cast<double>(a);
+		double e[num_threads];
+		const double g = static_cast<double>(a);
 
-		for (size_t i = 1; i < num_threads; ++i) _parallel.exec(i, Par::EFunction::Pass1);
-		pass1(0); if (num_threads > 1) _parallel.wait();
-		for (size_t i = 1; i < num_threads; ++i) _parallel.exec(i, Par::EFunction::Pass2_0);
-		pass2_0(0); if (num_threads > 1) _parallel.wait();
-		for (size_t i = 1; i < num_threads; ++i) _parallel.exec(i, Par::EFunction::Pass2_1);
-		pass2_1(0); if (num_threads > 1) _parallel.wait();
+		if (num_threads > 1)
+		{
+#pragma omp parallel
+			{
+				const size_t thread_id = size_t(omp_get_thread_num());
 
-		error_update();
+				pass1(thread_id);
+#pragma omp barrier
+				e[thread_id] = pass2_0(thread_id, g);
+#pragma omp barrier
+				pass2_1(thread_id);
+			}
+		}
+		else
+		{
+			pass1(0);
+			e[0] = pass2_0(0, g);
+			pass2_1(0);
+		}
+
+		double err = 0;
+		for (size_t i = 0; i < num_threads; ++i) err = std::max(err, e[i]);
+		_error = std::max(_error, err);
 	}
 
 	void initMultiplicand(const size_t src) override
 	{
-		const size_t num_threads = _num_threads;
 		const Vc * const z_src = (Vc *)&_mem[(src == 0) ? zOffset : zrOffset + (src - 1) * zSize];
 		Vc * const zp = (Vc *)&_mem[zpOffset];
 		for (size_t k = 0; k < index(N) / VSIZE; ++k) zp[k] = z_src[k];
 
-		for (size_t i = 1; i < num_threads; ++i) _parallel.exec(i, Par::EFunction::Pass1multiplicand);
-		pass1multiplicand(0); if (num_threads > 1) _parallel.wait();
+		if (_num_threads > 1)
+		{
+#pragma omp parallel
+			{
+				const size_t thread_id = size_t(omp_get_thread_num());
+				pass1multiplicand(thread_id);
+			}
+		}
+		else
+		{
+			pass1multiplicand(0);
+		}
 	}
 
 	void mul() override
 	{
 		const size_t num_threads = _num_threads;
-		_g = 1.0;
+		double e[num_threads];
 
-		for (size_t i = 1; i < num_threads; ++i) _parallel.exec(i, Par::EFunction::Pass1mul);
-		pass1mul(0); if (num_threads > 1) _parallel.wait();
-		for (size_t i = 1; i < num_threads; ++i) _parallel.exec(i, Par::EFunction::Pass2_0);
-		pass2_0(0); if (num_threads > 1) _parallel.wait();
-		for (size_t i = 1; i < num_threads; ++i) _parallel.exec(i, Par::EFunction::Pass2_1);
-		pass2_1(0); if (num_threads > 1) _parallel.wait();
+		if (num_threads > 1)
+		{
+#pragma omp parallel
+			{
+				const size_t thread_id = size_t(omp_get_thread_num());
 
-		error_update();
+				pass1mul(thread_id);
+#pragma omp barrier
+				e[thread_id] = pass2_0(thread_id, 1.0);
+#pragma omp barrier
+				pass2_1(thread_id);
+			}
+		}
+		else
+		{
+			pass1mul(0);
+			e[0] = pass2_0(0, 1.0);
+			pass2_1(0);
+		}
+
+		double err = 0;
+		for (size_t i = 0; i < num_threads; ++i) err = std::max(err, e[i]);
+		_error = std::max(_error, err);
 	}
 
 	void copy(const size_t dst, const size_t src) const override
@@ -992,10 +1010,15 @@ inline transform * create_transformCPUf64(const uint32_t b, const uint32_t n, co
 #elif defined(SBDTRANSFORM)
 	(void)b; (void)n; (void)num_threads; (void)num_regs; (void)checkError;
 #else
-	if      (n == 19) pTransform = new transformCPUf64<(1 << 19), VSIZE, true>(b, n, num_threads, num_regs, checkError);
+	if      (n == 18) pTransform = new transformCPUf64<(1 << 18), VSIZE, true>(b, n, num_threads, num_regs, checkError);
+	else if (n == 19) pTransform = new transformCPUf64<(1 << 19), VSIZE, true>(b, n, num_threads, num_regs, checkError);
 	else if (n == 20) pTransform = new transformCPUf64<(1 << 20), VSIZE, true>(b, n, num_threads, num_regs, checkError);
 	else if (n == 21) pTransform = new transformCPUf64<(1 << 21), VSIZE, true>(b, n, num_threads, num_regs, checkError);
-	else if (n == 22) pTransform = new transformCPUf64<(1 << 22), VSIZE, true>(b, n, num_threads, num_regs, checkError);
+	else if (n == 22)
+	{
+		if (b < 846398) pTransform = new transformCPUf64<(1 << 21), VSIZE, false>(b, n, num_threads, num_regs, true);
+		else            pTransform = new transformCPUf64<(1 << 22), VSIZE, true>(b, n, num_threads, num_regs, checkError);
+	}
 	else if (n == 23) pTransform = new transformCPUf64<(1 << 22), VSIZE, false>(b, n, num_threads, num_regs, checkError);
 #endif
 

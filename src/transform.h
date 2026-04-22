@@ -11,38 +11,13 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include <string>
 #include <sstream>
 
-#if defined(__aarch64__) && defined(__linux__)
-#include <sys/auxv.h>
-#endif
-
 #include "gint.h"
 #include "file.h"
-
-#if defined(__aarch64__)
-
-inline bool cpu_supports_sve()
-{
-#if defined(__linux__)
-	// See https://www.kernel.org/doc/Documentation/arm64/sve.txt
-	const unsigned long hwcaps = getauxval(AT_HWCAP);
-	return ((hwcaps & HWCAP_SVE) != 0);
-#elif defined(__clang__) && (__clang_major__ >= 19)
-	return __builtin_cpu_supports("sve");
-#else
-	// This does not guarantee the presence of the operating system interfaces
-	// Windows on Arm supports SVE then it should be OK
-	uint64_t r = 0;
-	__asm__ __volatile__ ("mrs %0, ID_AA64PFR0_EL1" : "=r"(r));
-	// SVE, bits [35:32] of ID_AA64PFR0_EL1
-	return (((r >> 32) & 0xf) >= 1);
-#endif
-}
-#endif
 
 class transform
 {
 protected:
-	enum class EKind { DTvec2, DTvec4, DTvec8, IBDTvec2, IBDTvec4, IBDTvec8, NTT2, NTT3, NTT3cpu, SBDTvec2, SBDTvec4, SBDTvec8 };
+	enum class EKind { DTvec2, DTvec4, DTvec8, IBDTvec2, IBDTvec4, IBDTvec8, NTT2, NTT3, NTT3cpu, SBDTvec2, SBDTvec4, SBDTvec8, NTT2s, NTT3s };
 
 private:
 	const size_t _size;
@@ -78,10 +53,6 @@ private:
 								  const cl_platform_id boinc_platform_id, const cl_device_id boinc_device_id, const bool verbose);
 #elif defined(__aarch64__)
 	static transform * create_neon(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
-	static size_t get_sve_size();
-	static transform * create_sve128(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
-	static transform * create_sve256(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
-	static transform * create_sve512(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
 #else
 	static transform * create_i32(const uint32_t b, const uint32_t n, const size_t num_regs);
 	static transform * create_sse2(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
@@ -92,6 +63,23 @@ private:
 	static transform * create_512(const uint32_t b, const uint32_t n, const size_t num_threads, const size_t num_regs, const bool checkError);
 #endif	
 #endif
+
+protected:
+	static void * alignNew(const size_t size, const size_t alignment, const size_t offset = 0)
+	{
+		char * const allocPtr = new char[size + alignment + offset + sizeof(size_t)];
+		const size_t addr = size_t(allocPtr) + alignment + sizeof(size_t);
+		size_t * const ptr = (size_t *)(addr - addr % alignment + offset);
+		ptr[-1] = size_t(allocPtr);
+		return (void *)(ptr);
+	}
+
+protected: 
+	static void alignDelete(void * const ptr)
+	{
+		char * const allocPtr = (char *)((size_t *)(ptr))[-1];
+		delete[] allocPtr;
+	}
 
 public:
 	transform(const size_t size, const uint32_t n, const uint32_t b, const EKind kind) : _size(size), _n(n), _b(b), _kind(kind) {}
@@ -125,29 +113,10 @@ public:
 		transform * pTransform = nullptr;
 
 #if defined(__aarch64__)
-		const uint64_t size = cpu_supports_sve() ? transform::get_sve_size() : 0;
-		if ((size == 128) && (impl.empty() || (impl == "sve128")))
-		{
-			pTransform = transform::create_sve128(b, n, num_threads, num_regs, checkError);
-			ttype = "sve128";
-		}
-		else if ((size == 256) && (impl.empty() || (impl == "sve256")))
-		{
-			pTransform = transform::create_sve256(b, n, num_threads, num_regs, checkError);
-			ttype = "sve256";
-		}
-		else if ((size == 512) && (impl.empty() || (impl == "sve512")))
-		{
-			pTransform = transform::create_sve512(b, n, num_threads, num_regs, checkError);
-			ttype = "sve512";
-		}
-		else
-		{
-			pTransform = transform::create_neon(b, n, num_threads, num_regs, checkError);
-			ttype = "neon";
-		}
+		(void)impl;
+		pTransform = transform::create_neon(b, n, num_threads, num_regs, checkError);
+		ttype = "neon";
 #else
-		__builtin_cpu_init();
 #if defined(__x86_64)
 		if (__builtin_cpu_supports("avx512f") && (impl.empty() || (impl == "512")))
 		{
@@ -156,7 +125,7 @@ public:
 		}
 		else
 #endif
-		if (__builtin_cpu_supports("fma") && (impl.empty() || (impl == "fma")))
+		     if (__builtin_cpu_supports("fma") && (impl.empty() || (impl == "fma")))
 		{
 			pTransform = transform::create_fma(b, n, num_threads, num_regs, checkError);
 			ttype = "fma";
@@ -195,23 +164,9 @@ public:
 	static std::string implementations()
 	{
 		std::string impls;
-#if !defined(GPU)
 #if defined(__aarch64__)
-		if (cpu_supports_sve())
-		{
-			const uint64_t size = transform::get_sve_size();
-			if (size == 128)      impls += " sve128";
-			else if (size == 256) impls += " sve256";
-			else if (size == 512) impls += " sve512";
-			else if (size > 0)
-			{
-				std::ostringstream ss; ss << "Warning: ARM SVE-" << size << " is not supported." << std::endl;
-				pio::print(ss.str());
-			}
-		}
 		impls += " neon";
 #else
-		__builtin_cpu_init();
 #if defined(__x86_64)
 		if (__builtin_cpu_supports("avx512f")) impls += " 512";
 #endif
@@ -220,7 +175,6 @@ public:
 		if (__builtin_cpu_supports("sse4.1")) impls += " sse4";
 		if (__builtin_cpu_supports("sse2")) impls += " sse2";
 		if (__builtin_cpu_supports("avx2")) impls += " i32";
-#endif
 #endif
 		return impls;
 	}

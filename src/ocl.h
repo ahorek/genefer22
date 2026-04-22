@@ -536,7 +536,7 @@ public:
 		std::ofstream fileOut((_vendor == EVendor::NVIDIA) ? "pgm.ptx" : "pgm.bin", std::ios::binary);
 		fileOut.write(binary.data(), std::streamsize(binSize));
 		fileOut.close();
-#endif
+#endif	
 	}
 
 public:
@@ -558,7 +558,7 @@ private:
 		oclFatal(clFinish(_queue));
 	}
 
-protected:
+public:
 	cl_mem _createBuffer(const cl_mem_flags flags, const size_t size, const bool clear = true) const
 	{
 		cl_int err;
@@ -573,7 +573,7 @@ protected:
 		return mem;
 	}
 
-protected:
+public:
 	static void _releaseBuffer(cl_mem & mem)
 	{
 		if (mem != nullptr)

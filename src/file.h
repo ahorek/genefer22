@@ -11,7 +11,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <gmp.h>
 
-// #if defined(_WIN64)
+// #if defined(_WIN32)
 // #include <IO.h>
 // #else
 // #include <unistd.h>
@@ -47,7 +47,7 @@ public:
 		{
 // 			if (_isSync)
 // 			{
-// #if defined(_WIN64)
+// #if defined(_WIN32)
 // 				_commit(_fileno(_cFile));
 // #else
 // 				fsync(fileno(_cFile));
