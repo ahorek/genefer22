@@ -21,13 +21,12 @@ jobs:
       - name: Install libs
         run: |
           brew update
-          brew install autoconf automake libtool libomp llvm
 
       - name: Print GCC version
         run: |
-          /usr/local/opt/llvm/bin/clang++ -v
+          clang++ -v
           cd aaa
-          /usr/local/opt/llvm/bin/clang++ -std=c++11 -Wall -Wextra -pedantic -pthread test.cpp -o test_tls
+          clang++ -std=c++11 -Wall -Wextra -pedantic -pthread test.cpp -o test_tls
           ./test_tls
 
       - name: Build BOINC
