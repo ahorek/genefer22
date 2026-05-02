@@ -8,7 +8,7 @@ env:
 
 jobs:
   build:
-    runs-on: macos-13
+    runs-on: macos-14
     name: mac64
 
     defaults:
@@ -26,6 +26,9 @@ jobs:
       - name: Print GCC version
         run: |
           /usr/local/opt/llvm/bin/clang++ -v
+          cd aaa
+          /opt/homebrew/opt/llvm/bin/clang++ -std=c++11 -Wall -Wextra -pedantic -pthread test.cpp -o test_tls
+          ./test_tls
 
       - name: Build BOINC
         run: |

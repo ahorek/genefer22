@@ -25,6 +25,9 @@ jobs:
       - name: Print GCC version
         run: |
           /opt/homebrew/opt/llvm/bin/clang++ -v
+          cd aaa
+          /opt/homebrew/opt/llvm/bin/clang++ -std=c++11 -Wall -Wextra -pedantic -pthread test.cpp -o test_tls
+          ./test_tls
 
       - name: Build BOINC
         run: |
