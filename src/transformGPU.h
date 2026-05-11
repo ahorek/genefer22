@@ -405,7 +405,7 @@ public:
 		_copy = createCopyKernel("copy");
 		_copyp = createCopypKernel("copyp");
 
-		_pSplit = new splitter(size_t(_ln), CHUNK256, CHUNK1024, sizeof(RNS) + ((RNS_SIZE == 3) ? sizeof(RNSe) : 0), 11, getLocalMemSize(), getMaxWorkGroupSize());
+		_pSplit = new splitter(size_t(_ln), CHUNK256, CHUNK1024, sizeof(RNS) + ((RNS_SIZE == 3) ? sizeof(RNSe) : 0), 1, 11, getLocalMemSize(), getMaxWorkGroupSize());
 	}
 
 	void releaseKernels()
@@ -961,6 +961,31 @@ public:
 
 		setProfiling(false);
 	}
+
+public:
+	void info()
+	{
+		std::ostringstream ss; ss << "split:";
+		for (size_t sIndex = 0, ns = _pSplit->getSize(); sIndex < ns; ++sIndex)
+		{
+			int lm = _ln;
+			const size_t s = _pSplit->getPartSize(sIndex);
+			for (size_t i = 1; i < s; ++i)
+			{
+				const uint32_t k = _pSplit->getPart(sIndex, i - 1);
+				lm -= int(k);
+				ss << " " << k;
+				if (i != 1) ss << "(" << lm << ")"; else ss << "_0";
+			}
+			ss << " s" << lm;
+
+			if (sIndex == _splitIndex) ss << " *";
+			ss << ",";
+		}
+
+		ss << " blk = " << _baseModBlk << ", wsize1 = " << _naLocalWS << ", wsize2 = " << _nbLocalWS << "." << std::endl;
+		pio::display(ss.str());
+	}
 };
 
 template<size_t RNS_SIZE>
@@ -1233,5 +1258,10 @@ public:
 	void copy(const size_t dst, const size_t src) const override
 	{
 		_pEngine->copy(dst, src);
+	}
+
+	void info() const override
+	{
+		_pEngine->info();
 	}
 };
