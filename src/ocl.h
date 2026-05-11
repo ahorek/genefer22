@@ -343,7 +343,7 @@ public:
 		//if (verbose)
 		//{
 			std::ostringstream ssd;
-			ssd << "Running on device '" << deviceName << "', vendor '" << deviceVendor
+			ssd << "Running on gpu device '" << deviceName << "', vendor '" << deviceVendor
 				<< "', version '" << deviceVersion << "', driver '" << driverVersion << "'";
 //#if defined(ocl_debug)
 			ssd << std::endl << computeUnits << " compUnits @ " << maxClockFrequency << "MHz, mem=" << (memSize >> 20) << "MB, cache="
