@@ -90,7 +90,7 @@ private:
 		if (verbose)
 		{
 			std::ostringstream ss;
-			if (full) ss << ", data size: " << std::setprecision(3) << _transform->getCacheSize() / (1024 * 1024.0) << " MB";
+			if (full) ss << ", data size: " << std::setprecision(3) << _transform->getMemSize() / (1024 * 1024.0) << " MB";
 			ss << "." << std::endl;
 			pio::print(ss.str());
 		}
@@ -177,14 +177,14 @@ private:
 		if (_isBoinc) boinc_fraction_done((i0 > i_start) ? static_cast<double>(i0 - i_start) / i0 : 0.0);
 	}
 
-	int printProgress(const double elapsedTime, const double displayTime, const int i)
+	int printProgress(const double displayTime, const int i)
 	{
 		if (_print_i == i) return 1;
 #if defined(BOINC)
 		const double prev_percent = static_cast<double>(_print_range - _print_i) / _print_range;
 #endif
-		const double percent = static_cast<double>(_print_range - i) / _print_range;
 		const double mulTime = displayTime / (_print_i - i); _print_i = i;
+		const double percent = static_cast<double>(_print_range - i) / _print_range;
 		const int dcount = std::max(static_cast<int>(1.0 / mulTime), 2);
 		if (_isBoinc)
 		{
@@ -208,15 +208,15 @@ private:
 		}
 		else
 		{
-			const double remainingTime = mulTime * i, expectedTime = elapsedTime / percent;
-			std::ostringstream ss; ss << std::setprecision(3) << percent * 100.0 << "% done, " << timer::formatTime(remainingTime)
-									<< "/" << timer::formatTime(expectedTime) << " remaining, " << mulTime * 1e3 << " ms/bit.        \r";
+			const double estimatedTime = mulTime * i;
+			std::ostringstream ss; ss << std::setprecision(3) << percent * 100.0 << "% done, " << timer::formatTime(estimatedTime)
+									<< " remaining, " << mulTime * 1e3 << " ms/bit.        \r";
 			pio::display(ss.str());
 		}
 		return dcount;
 	}
 
-	static void clearline() { pio::display("                                                            \r"); }
+	static void clearline() { pio::display("                                                \r"); }
 
 	int _readContext(const std::string & filename, const int where, const bool fast_checkpoints, int & i, double & elapsedTime)
 	{
@@ -539,8 +539,8 @@ private:
 
 			if (i % dcount == 0)
 			{
-				const double elapsedTime = chrono.getElapsedTime(), displayTime = chrono.getDisplayTime();
-				if (displayTime >= 10) { dcount = printProgress(elapsedTime, displayTime, i); chrono.resetDisplayTime(); }
+				chrono.read(); const double displayTime = chrono.getDisplayTime();
+				if (displayTime >= 10) { dcount = printProgress(displayTime, i); chrono.resetDisplayTime(); }
 				if (!_isBoinc && (chrono.getRecordTime() > 600)) { saveContext(0, fast_checkpoints, i, chrono.getElapsedTime()); chrono.resetRecordTime(); }
 			}
 
@@ -964,8 +964,8 @@ private:
 
 				if (i % dcount == 0)
 				{
-					const double elapsedTime = chrono.getElapsedTime(), displayTime = chrono.getDisplayTime();
-					if (displayTime >= 10) { dcount = printProgress(elapsedTime, displayTime, i); chrono.resetDisplayTime(); }
+					chrono.read(); const double displayTime = chrono.getDisplayTime();
+					if (displayTime >= 10) { dcount = printProgress(displayTime, i); chrono.resetDisplayTime(); }
 					if (!_isBoinc && (chrono.getRecordTime() > 600)) { saveContext(1, false, i, chrono.getElapsedTime()); chrono.resetRecordTime(); }
 				}
 
@@ -1042,8 +1042,8 @@ private:
 
 			if (i % dcount == 0)
 			{
-				const double elapsedTime = chrono.getElapsedTime(), displayTime = chrono.getDisplayTime();
-				if (displayTime >= 10) { dcount = printProgress(elapsedTime, displayTime, i); chrono.resetDisplayTime(); }
+				chrono.read(); const double displayTime = chrono.getDisplayTime();
+				if (displayTime >= 10) { dcount = printProgress(displayTime, i); chrono.resetDisplayTime(); }
 				if (!_isBoinc && (chrono.getRecordTime() > 600)) { saveContext(1, false, i, chrono.getElapsedTime()); chrono.resetRecordTime(); }
 			}
 
@@ -1182,8 +1182,8 @@ private:
 
 				if (i % dcount == 0)
 				{
-					const double elapsedTime = chrono.getElapsedTime(), displayTime = chrono.getDisplayTime();
-					if (displayTime >= 10) { dcount = printProgress(elapsedTime, displayTime, i); chrono.resetDisplayTime(); }
+					chrono.read(); const double displayTime = chrono.getDisplayTime();
+					if (displayTime >= 10) { dcount = printProgress(displayTime, i); chrono.resetDisplayTime(); }
 					if (chrono.getRecordTime() > 600) { saveContextPrime(k, i, chrono.getElapsedTime(), totalTime, cond); chrono.resetRecordTime(); }
 				}
 
@@ -1241,28 +1241,27 @@ private:
 	EReturn bench(const uint32_t m, const size_t device, const size_t nthreads, const std::string & impl)
 	{
 #if defined(DTRANSFORM)
-		static constexpr uint32_t bm[12] = { 4200000, 3500000, 2800000, 2300000, 1900000, 1600000,
-		 									 1300000, 1100000, 880000, 730000, 600000, 510000 };
+		static constexpr uint32_t bm[13] = { 4200000, 3500000, 2800000, 2300000, 1900000, 1600000,
+		 									 1300000, 1100000, 880000, 730000, 600000, 600000, 510000 };
 #elif defined(IBDTRANSFORM)
-		static constexpr uint32_t bm[12] = { 500000000, 380000000, 290000000, 220000000, 160000000, 125000000,
-		 									 94000000, 71000000, 54000000, 41000000, 31000000, 24000000 };
+		static constexpr uint32_t bm[13] = { 500000000, 380000000, 290000000, 220000000, 160000000, 125000000,
+		 									 94000000, 71000000, 54000000, 41000000, 31000000, 31000000, 24000000 };
 #elif defined(SBDTRANSFORM)
-		static constexpr uint32_t bm[12] = { 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000,
-		 									 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000 };
+		static constexpr uint32_t bm[13] = { 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000,
+		 									 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000 };
 #elif defined(NTTRANSFORM2)
-		static constexpr uint32_t bm[12] = { 45687570, 32305990, 22843784, 16152994, 11421892, 8076496,
-		 									 5710946, 4038248, 2855472, 2019124, 1427736, 1009562 };
+		static constexpr uint32_t bm[13] = { 45687570, 32305990, 22843784, 16152994, 11421892, 8076496,
+		 									 5710946, 4038248, 2855472, 2019124, 1427736, 1427736, 1009562 };
 #elif defined(NTTRANSFORM3)
-		static constexpr uint32_t bm[12] = { 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000,
-		 									 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000 };
+		static constexpr uint32_t bm[13] = { 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000,
+		 									 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000, 2000000000 };
 #else
-		static constexpr uint32_t bm[12] = { 1000000000, 1000000000, 1000000000, 460000000, 460000000, 350000000,
-											 60000000, 15000000, 4000000, 2500000, 400000, 100000 };
+		static constexpr uint32_t bm[13] = { 2000000000, 2000000000, 2000000000, 460000000, 400000000,
+											 250000000, 40000000, 9000000, 3500000, 1500000, 400000, 1200000, 500000 };
 #endif
-
 		const size_t num_regs = 3;
 
-		const uint32_t b = bm[m - 12], n = m;
+		const uint32_t b = bm[m - 12], n = (m <= 22) ? m : m - 1;
 
 #if defined(GPU)
 		(void)nthreads; (void)impl;
@@ -1274,10 +1273,8 @@ private:
 
 		transform * const pTransform = _transform;
 
-		// pTransform->info();
-
 		_gi = new gint(size_t(1) << n, b);
-		mpz_t exponent; mpz_init(exponent); mpz_ui_pow_ui(exponent, 6, 50);
+		mpz_t exponent; mpz_init(exponent); mpz_ui_pow_ui(exponent, 3, 20);
 		double testTime = 0, validTime = 0; bool isPrp = false; uint64_t res64 = 0, old64 = 0;
 		const EReturn qret = quick(exponent, testTime, validTime, isPrp, res64, old64);
 		mpz_clear(exponent);
@@ -1294,7 +1291,7 @@ private:
 			static volatile bool _break;
 
 			_break = false;
-			std::thread delay([=]() { std::this_thread::sleep_for(std::chrono::seconds(10)); _break = true; }); delay.detach();
+			std::thread delay([=]() { std::this_thread::sleep_for(std::chrono::seconds(5)); _break = true; }); delay.detach();
 
 			watch chrono(0);
 			size_t i = 1;
@@ -1307,7 +1304,12 @@ private:
 
 			pTransform->copy(1, 0);	// synchro
 
-			const size_t memsize = _transform->getCacheSize();
+			const size_t memsize = 
+#if defined(GPU)
+			_transform->getMemSize();
+#else
+			_transform->getCacheSize();
+#endif
 
 			const double error = _transform->getError();
 			const double mulTime = chrono.getElapsedTime() / i, estimatedTime = mulTime * std::log2(b) * (size_t(1) << n);

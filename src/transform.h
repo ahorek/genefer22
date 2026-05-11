@@ -17,7 +17,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 class transform
 {
 protected:
-	enum class EKind { DTvec2, DTvec4, DTvec8, IBDTvec2, IBDTvec4, IBDTvec8, NTT2, NTT3, NTT3cpu, SBDTvec2, SBDTvec4, SBDTvec8, NTT2s, NTT3s };
+	enum class EKind { DTvec2, DTvec4, DTvec8, IBDTvec2, IBDTvec4, IBDTvec8, NTT2, NTT3, NTT3cpu, SBDTvec2, SBDTvec4, SBDTvec8 }; 
 
 private:
 	const size_t _size;
@@ -30,7 +30,7 @@ protected:
 	virtual void setZi(const int32_t * const zi) = 0;
 
 public:
-	virtual void set(const uint32_t a) = 0;					// r_0 = a
+	virtual void set(const int32_t a) = 0;					// r_0 = a
 	virtual void squareDup(const bool dup) = 0;				// r_0 = r_0^2 or 2*r_0^2
 	virtual void squareMul(const int32_t a) = 0;			// r_0 = a*r_0^2
 	virtual void initMultiplicand(const size_t src) = 0;	// r_m = transform(r_src)
@@ -45,7 +45,6 @@ public:
 	virtual void saveContext(file & cFile, const size_t num_regs) const = 0;
 
 	virtual double getError() const { return 0; }
-	virtual void info() const {}
 
 private:
 #if defined(GPU)

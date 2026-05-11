@@ -34,12 +34,13 @@ private:
 	struct partition
 	{
 		size_t size;
-		uint32_t p[64];
+		uint32_t p[8];
 	};
 
 	const bool b256, b1024;
 	const size_t mMax;
-	std::vector<partition> part;
+	size_t size;
+	partition part[32];
 
 private:
 	void split(const size_t m, const size_t i, partition & p)
@@ -60,13 +61,12 @@ private:
 			split(m - 6, i + 1, p);
 		}
 
-		if ((5 <= m) && (m <= mMax) && (i > 0))
+		if ((5 <= m) && (m <= mMax))
 		{
-			partition pt;
-			for (size_t k = 0; k < i; ++k) pt.p[k] = p.p[k];
-			pt.p[i] = static_cast<uint32_t>(m);
-			pt.size = i + 1;
-			part.push_back(pt);
+			for (size_t k = 0; k < i; ++k) part[size].p[k] = p.p[k];
+			part[size].p[i] = static_cast<uint32_t>(m);
+			part[size].size = i + 1;
+			size++;
 		}
 	}
 
@@ -74,17 +74,18 @@ private:
 	static size_t log_2(const size_t n) { size_t r = 0; for (size_t m = 1; m < n; m *= 2) ++r; return r; }
 
 public:
-	splitter(const size_t n, const size_t chunk256, const size_t chunk1024, const size_t sizeofType, const size_t sizeofVec,
-		const size_t mSquareMax, const cl_ulong localMemSize, const size_t maxWorkGroupSize) :
-		b256((maxWorkGroupSize >= (256 / 4) * chunk256) && (localMemSize >= 256 * chunk256 * sizeofVec * sizeofType)),
-		b1024((maxWorkGroupSize >= (1024 / 4) * chunk1024) && (localMemSize >= 1024 * chunk1024 * sizeofVec * sizeofType)),
-		mMax(std::min(mSquareMax, std::min(log_2(size_t(localMemSize / sizeofType)), log_2(maxWorkGroupSize * 4 * sizeofVec))))
+	splitter(const size_t n, const size_t chunk256, const size_t chunk1024, const size_t sizeofRNS, const size_t mSquareMax,
+		const cl_ulong localMemSize, const size_t maxWorkGroupSize) :
+		b256(maxWorkGroupSize >= (256 / 4) * chunk256),
+		b1024((maxWorkGroupSize >= (1024 / 4) * chunk1024) && (localMemSize / sizeofRNS >= 1024 * chunk1024)),
+		mMax(std::min(mSquareMax, std::min(log_2(size_t(localMemSize / sizeofRNS)), log_2(maxWorkGroupSize * 4))))
 	{
+		size = 0;
 		partition p;
 		split(n, 0, p);
 	}
 
-	size_t getSize() const { return part.size(); }
+	size_t getSize() const { return size; }
 	size_t getPartSize(const size_t i) const { return part[i].size; }
 	uint32_t getPart(const size_t i, const size_t j) const { return part[i].p[j]; }
 };
@@ -163,12 +164,11 @@ protected:
 	}
 
 protected:
-	static void oclFatal(const cl_int res, const char * const ext = nullptr)
+	static void oclFatal(const cl_int res)
 	{
 		if (!oclError(res))
 		{
 			std::ostringstream ss; ss << "opencl error: " << errorString(res);
-			if (ext != nullptr) ss << " (" << ext << ")";
 			throw std::runtime_error(ss.str());
 		}
 	}
@@ -446,47 +446,6 @@ public:
 	}
 
 public:
-	bool readOpenCL(const char * const clFileName, const char * const headerFileName, const char * const varName, std::ostringstream & src) const
-	{
-		std::ifstream clFile(clFileName);
-		if (!clFile.is_open()) return false;
-		
-		// if .cl file exists then generate header file
-		std::ofstream hFile(headerFileName, std::ios::binary);	// binary: don't convert line endings to `CRLF` 
-		if (!hFile.is_open()) throw std::runtime_error("cannot write openCL header file");
-
-		hFile << "/*" << std::endl;
-		hFile << "Copyright 2022, Yves Gallot" << std::endl << std::endl;
-		hFile << "genefer is free source code, under the MIT license (see LICENSE). You can redistribute, use and/or modify it." << std::endl;
-		hFile << "Please give feedback to the authors if improvement is realized. It is distributed in the hope that it will be useful." << std::endl;
-		hFile << "*/" << std::endl << std::endl;
-
-		hFile << "#pragma once" << std::endl << std::endl;
-		hFile << "#include <cstdint>" << std::endl << std::endl;
-
-		hFile << "static const char * const " << varName << " = \\" << std::endl;
-
-		std::string line;
-		while (std::getline(clFile, line))
-		{
-			hFile << "\"";
-			for (char c : line)
-			{
-				if ((c == '\\') || (c == '\"')) hFile << '\\';
-				hFile << c;
-			}
-			hFile << "\\n\" \\" << std::endl;
-
-			src << line << std::endl;
-		}
-		hFile << "\"\";" << std::endl;
-
-		hFile.close();
-		clFile.close();
-		return true;
-	}
-
-public:
 	void loadProgram(const std::string & programSrc)
 	{
 #if defined(ocl_debug)
@@ -584,20 +543,20 @@ public:
 	}
 
 protected:
-	void _readBuffer(cl_mem & mem, void * const ptr, const size_t size, const size_t offset = 0)
+	void _readBuffer(cl_mem & mem, void * const ptr, const size_t size)
 	{
 		// Fill the buffer with random numbers to generate an error even if clEnqueueReadBuffer fails without error.
 		char * const cptr = static_cast<char *>(ptr);
 		for (size_t i = 0; i < size; ++i) cptr[i] = static_cast<char>(std::rand());
 		_sync();
-		oclFatal(clEnqueueReadBuffer(_queue, mem, CL_TRUE, offset, size, ptr, 0, nullptr, nullptr));
+		oclFatal(clEnqueueReadBuffer(_queue, mem, CL_TRUE, 0, size, ptr, 0, nullptr, nullptr));
 	}
 
 protected:
-	void _writeBuffer(cl_mem & mem, const void * const ptr, const size_t size, const size_t offset = 0)
+	void _writeBuffer(cl_mem & mem, const void * const ptr, const size_t size)
 	{
 		_sync();
-		oclFatal(clEnqueueWriteBuffer(_queue, mem, CL_TRUE, offset, size, ptr, 0, nullptr, nullptr));
+		oclFatal(clEnqueueWriteBuffer(_queue, mem, CL_TRUE, 0, size, ptr, 0, nullptr, nullptr));
 	}
 
 protected:
@@ -605,7 +564,7 @@ protected:
 	{
 		cl_int err;
 		cl_kernel kernel = clCreateKernel(_program, kernelName, &err);
-		oclFatal(err, kernelName);
+		oclFatal(err);
 		_profileMap[kernel] = profile(kernelName);
 		return kernel;
 	}
@@ -617,7 +576,7 @@ protected:
 		{
 			oclFatal(clReleaseKernel(kernel));
 			kernel = nullptr;
-		}
+		}		
 	}
 
 protected:
@@ -647,7 +606,7 @@ protected:
 			if (_isSync)
 			{
 				++_syncCount;
-				if (_syncCount == 16 * 1024) _sync();
+				if (_syncCount == 1024) _sync();
 			}
 		}
 		else
