@@ -337,18 +337,21 @@ public:
 		oclFatal(clGetDeviceInfo(_device, CL_DEVICE_MAX_WORK_GROUP_SIZE, sizeof(_maxWorkGroupSize), &_maxWorkGroupSize, nullptr));
 		oclFatal(clGetDeviceInfo(_device, CL_DEVICE_PROFILING_TIMER_RESOLUTION, sizeof(_timerResolution), &_timerResolution, nullptr));
 
-		if (verbose)
-		{
+		if(_maxWorkGroupSize > 256)
+			_maxWorkGroupSize = 256;
+
+		//if (verbose)
+		//{
 			std::ostringstream ssd;
 			ssd << "Running on device '" << deviceName << "', vendor '" << deviceVendor
 				<< "', version '" << deviceVersion << "', driver '" << driverVersion << "'";
-#if defined(ocl_debug)
+//#if defined(ocl_debug)
 			ssd << std::endl << computeUnits << " compUnits @ " << maxClockFrequency << "MHz, mem=" << (memSize >> 20) << "MB, cache="
 			 	<< (memCacheSize >> 10) << "kB, cacheLine=" << memCacheLineSize << "B, localMem=" << (_localMemSize >> 10)
 			 	<< "kB, constMem=" << (memConstSize >> 10) << "kB, maxWorkGroup=" << _maxWorkGroupSize << ".";
-#endif
+//#endif
 			pio::print(ssd.str());
-		}
+		//}
 
 		const cl_context_properties contextProperties[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)_platform, 0 };
 		cl_int err_cc;
@@ -376,7 +379,7 @@ public:
 	}
 
 public:
-	size_t getMaxWorkGroupSize() const { return 256; }
+	size_t getMaxWorkGroupSize() const { return _maxWorkGroupSize; }
 	size_t getLocalMemSize() const { return _localMemSize; }
 	size_t getTimerResolution() const { return _timerResolution; }
 	bool isIntel() const { return (_vendor == EVendor::INTEL); }
