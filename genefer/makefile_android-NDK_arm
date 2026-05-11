@@ -17,7 +17,7 @@ OCL_LIB = -L$(OCL_DIR)/lib -lOpenCL -ldl -L$(ROOT_DIR)/Khronos/Android
 
 CFLAGS = -Wall -Wextra -Wsign-conversion $(GMP_INC)
 OFLAGS = -ffinite-math-only -ffp-contract=fast -fno-trapping-math -fno-signed-zeros
-FLAGS_CPU = -O3
+FLAGS_CPU = -O3 -fopenmp
 FLAGS_GPU = -O3 -DGPU
 
 OBJS_CPU = main.o transform_neon.o
