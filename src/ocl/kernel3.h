@@ -498,6 +498,9 @@ static const char * const src_ocl_kernel3 = \
 "#define B_64	(64 / 4)\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_64 * CHUNK64\n" \
+"	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))\n" \
+"#endif\n" \
 "void forward64(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	 __global const RNS_W * restrict const w, __global const RNS_We * restrict const we,\n" \
 "	const int lm, const unsigned int s)\n" \
@@ -511,6 +514,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_64 * CHUNK64\n" \
+"	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))\n" \
+"#endif\n" \
 "void backward64(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we,\n" \
 "	const int lm, const unsigned int s)\n" \
@@ -524,6 +530,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_64 * CHUNK64\n" \
+"	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))\n" \
+"#endif\n" \
 "void forward64_0(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	 __global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
@@ -542,6 +551,9 @@ static const char * const src_ocl_kernel3 = \
 "#define B_256	(256 / 4)\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_256 * CHUNK256\n" \
+"	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))\n" \
+"#endif\n" \
 "void forward256(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we,\n" \
 "	const int lm, const unsigned int s)\n" \
@@ -557,6 +569,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_256 * CHUNK256\n" \
+"	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))\n" \
+"#endif\n" \
 "void backward256(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we,\n" \
 "	const int lm, const unsigned int s)\n" \
@@ -572,6 +587,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_256 * CHUNK256\n" \
+"	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))\n" \
+"#endif\n" \
 "void forward256_0(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
@@ -592,6 +610,9 @@ static const char * const src_ocl_kernel3 = \
 "#define B_1024	(1024 / 4)\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_1024 * CHUNK1024\n" \
+"	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))\n" \
+"#endif\n" \
 "void forward1024(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we,\n" \
 "	const int lm, const unsigned int s)\n" \
@@ -609,6 +630,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_1024 * CHUNK1024\n" \
+"	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))\n" \
+"#endif\n" \
 "void backward1024(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we,\n" \
 "	const int lm, const unsigned int s)\n" \
@@ -626,6 +650,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= B_1024 * CHUNK1024\n" \
+"	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))\n" \
+"#endif\n" \
 "void forward1024_0(__global RNS * restrict const z, __global RNSe * restrict const ze,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
@@ -832,6 +859,9 @@ static const char * const src_ocl_kernel3 = \
 "	__local RNSe * const Z4e = &Ze[4 * i128];\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 512 / 4\n" \
+"	__attribute__((reqd_work_group_size(512 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void square512(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -874,6 +904,9 @@ static const char * const src_ocl_kernel3 = \
 "	__local RNSe * const Z4e = &Ze[4 * i256];\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 1024 / 4\n" \
+"	__attribute__((reqd_work_group_size(1024 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void square1024(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -919,6 +952,9 @@ static const char * const src_ocl_kernel3 = \
 "	__local RNSe * const Z4e = &Ze[4 * i512];\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 2048 / 4\n" \
+"	__attribute__((reqd_work_group_size(2048 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void square2048(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
@@ -995,6 +1031,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 512 / 4\n" \
+"	__attribute__((reqd_work_group_size(512 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void fwd512p(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -1007,6 +1046,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 1024 / 4\n" \
+"	__attribute__((reqd_work_group_size(1024 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void fwd1024p(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -1019,6 +1061,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 2048 / 4\n" \
+"	__attribute__((reqd_work_group_size(2048 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void fwd2048p(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
@@ -1034,6 +1079,9 @@ static const char * const src_ocl_kernel3 = \
 "// -----------------\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 32 / 4 * BLK32\n" \
+"	__attribute__((work_group_size_hint(32 / 4 * BLK32, 1, 1)))\n" \
+"#endif\n" \
 "void mul32(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS * restrict const zp, __global const RNSe * restrict const zpe,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
@@ -1115,6 +1163,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 512 / 4\n" \
+"	__attribute__((reqd_work_group_size(512 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void mul512(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS * restrict const zp, __global const RNSe * restrict const zpe,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
@@ -1136,6 +1187,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 1024 / 4\n" \
+"	__attribute__((reqd_work_group_size(1024 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void mul1024(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS * restrict const zp, __global const RNSe * restrict const zpe,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
@@ -1157,6 +1211,9 @@ static const char * const src_ocl_kernel3 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
+"#if MAX_WORK_GROUP_SIZE >= 2048 / 4\n" \
+"	__attribute__((reqd_work_group_size(2048 / 4, 1, 1)))\n" \
+"#endif\n" \
 "void mul2048(__global RNS * restrict const z, __global RNSe * restrict const ze, __global const RNS * restrict const zp, __global const RNSe * restrict const zpe,\n" \
 "	__global const RNS_W * restrict const w, __global const RNS_We * restrict const we)\n" \
 "{\n" \
