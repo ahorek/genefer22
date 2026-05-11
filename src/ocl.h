@@ -340,8 +340,8 @@ public:
 		if(_maxWorkGroupSize > 256)
 			_maxWorkGroupSize = 256;
 
-		//if (verbose)
-		//{
+		if (verbose)
+		{
 			std::ostringstream ssd;
 			ssd << "Running on gpu device '" << deviceName << "', vendor '" << deviceVendor
 				<< "', version '" << deviceVersion << "', driver '" << driverVersion << "'";
@@ -351,7 +351,7 @@ public:
 			 	<< "kB, constMem=" << (memConstSize >> 10) << "kB, maxWorkGroup=" << _maxWorkGroupSize << ".";
 //#endif
 			pio::print(ssd.str());
-		//}
+		}
 
 		const cl_context_properties contextProperties[3] = { CL_CONTEXT_PLATFORM, (cl_context_properties)_platform, 0 };
 		cl_int err_cc;
@@ -446,6 +446,47 @@ public:
 		_profile = enable;
 		_queue = enable ? _queueP : _queueF;
 		resetProfiles();
+	}
+
+public:
+	bool readOpenCL(const char * const clFileName, const char * const headerFileName, const char * const varName, std::ostringstream & src) const
+	{
+		std::ifstream clFile(clFileName);
+		if (!clFile.is_open()) return false;
+		
+		// if .cl file exists then generate header file
+		std::ofstream hFile(headerFileName, std::ios::binary);	// binary: don't convert line endings to `CRLF` 
+		if (!hFile.is_open()) throw std::runtime_error("cannot write openCL header file");
+
+		hFile << "/*" << std::endl;
+		hFile << "Copyright 2022, Yves Gallot" << std::endl << std::endl;
+		hFile << "genefer is free source code, under the MIT license (see LICENSE). You can redistribute, use and/or modify it." << std::endl;
+		hFile << "Please give feedback to the authors if improvement is realized. It is distributed in the hope that it will be useful." << std::endl;
+		hFile << "*/" << std::endl << std::endl;
+
+		hFile << "#pragma once" << std::endl << std::endl;
+		hFile << "#include <cstdint>" << std::endl << std::endl;
+
+		hFile << "static const char * const " << varName << " = \\" << std::endl;
+
+		std::string line;
+		while (std::getline(clFile, line))
+		{
+			hFile << "\"";
+			for (char c : line)
+			{
+				if ((c == '\\') || (c == '\"')) hFile << '\\';
+				hFile << c;
+			}
+			hFile << "\\n\" \\" << std::endl;
+
+			src << line << std::endl;
+		}
+		hFile << "\"\";" << std::endl;
+
+		hFile.close();
+		clFile.close();
+		return true;
 	}
 
 public:
@@ -546,20 +587,20 @@ public:
 	}
 
 protected:
-	void _readBuffer(cl_mem & mem, void * const ptr, const size_t size)
+	void _readBuffer(cl_mem & mem, void * const ptr, const size_t size, const size_t offset = 0)
 	{
 		// Fill the buffer with random numbers to generate an error even if clEnqueueReadBuffer fails without error.
 		char * const cptr = static_cast<char *>(ptr);
 		for (size_t i = 0; i < size; ++i) cptr[i] = static_cast<char>(std::rand());
 		_sync();
-		oclFatal(clEnqueueReadBuffer(_queue, mem, CL_TRUE, 0, size, ptr, 0, nullptr, nullptr));
+		oclFatal(clEnqueueReadBuffer(_queue, mem, CL_TRUE, offset, size, ptr, 0, nullptr, nullptr));
 	}
 
 protected:
-	void _writeBuffer(cl_mem & mem, const void * const ptr, const size_t size)
+	void _writeBuffer(cl_mem & mem, const void * const ptr, const size_t size, const size_t offset = 0)
 	{
 		_sync();
-		oclFatal(clEnqueueWriteBuffer(_queue, mem, CL_TRUE, 0, size, ptr, 0, nullptr, nullptr));
+		oclFatal(clEnqueueWriteBuffer(_queue, mem, CL_TRUE, offset, size, ptr, 0, nullptr, nullptr));
 	}
 
 protected:
