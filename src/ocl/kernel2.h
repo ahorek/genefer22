@@ -302,9 +302,6 @@ static const char * const src_ocl_kernel2 = \
 "#define B_64	(64 / 4)\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_64 * CHUNK64\n" \
-"	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))\n" \
-"#endif\n" \
 "void forward64(__global RNS * restrict const z, __global const RNS_W * restrict const w, const int lm, const unsigned int s)\n" \
 "{\n" \
 "	FORWARD_I(B_64, CHUNK64);\n" \
@@ -316,9 +313,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_64 * CHUNK64\n" \
-"	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))\n" \
-"#endif\n" \
 "void backward64(__global RNS * restrict const z, __global const RNS_W * restrict const w, const int lm, const unsigned int s)\n" \
 "{\n" \
 "	BACKWARD_I(B_64, CHUNK64);\n" \
@@ -330,9 +324,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_64 * CHUNK64\n" \
-"	__attribute__((reqd_work_group_size(B_64 * CHUNK64, 1, 1)))\n" \
-"#endif\n" \
 "void forward64_0(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	const int lm = LNSIZE - 6; const unsigned int s = 64 / 4;\n" \
@@ -350,9 +341,6 @@ static const char * const src_ocl_kernel2 = \
 "#define B_256	(256 / 4)\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_256 * CHUNK256\n" \
-"	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))\n" \
-"#endif\n" \
 "void forward256(__global RNS * restrict const z, __global const RNS_W * restrict const w, const int lm, const unsigned int s)\n" \
 "{\n" \
 "	FORWARD_I(B_256, CHUNK256);\n" \
@@ -366,9 +354,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_256 * CHUNK256\n" \
-"	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))\n" \
-"#endif\n" \
 "void backward256(__global RNS * restrict const z, __global const RNS_W * restrict const w, const int lm, const unsigned int s)\n" \
 "{\n" \
 "	BACKWARD_I(B_256, CHUNK256);\n" \
@@ -382,9 +367,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_256 * CHUNK256\n" \
-"	__attribute__((reqd_work_group_size(B_256 * CHUNK256, 1, 1)))\n" \
-"#endif\n" \
 "void forward256_0(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	const int lm = LNSIZE - 8; const unsigned int s = 256 / 4;\n" \
@@ -404,9 +386,6 @@ static const char * const src_ocl_kernel2 = \
 "#define B_1024	(1024 / 4)\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_1024 * CHUNK1024\n" \
-"	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))\n" \
-"#endif\n" \
 "void forward1024(__global RNS * restrict const z, __global const RNS_W * restrict const w, const int lm, const unsigned int s)\n" \
 "{\n" \
 "	FORWARD_I(B_1024, CHUNK1024);\n" \
@@ -422,9 +401,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_1024 * CHUNK1024\n" \
-"	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))\n" \
-"#endif\n" \
 "void backward1024(__global RNS * restrict const z, __global const RNS_W * restrict const w, const int lm, const unsigned int s)\n" \
 "{\n" \
 "	BACKWARD_I(B_1024, CHUNK1024);\n" \
@@ -440,9 +416,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= B_1024 * CHUNK1024\n" \
-"	__attribute__((reqd_work_group_size(B_1024 * CHUNK1024, 1, 1)))\n" \
-"#endif\n" \
 "void forward1024_0(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	const int lm = LNSIZE - 10; const unsigned int s = 1024 / 4;\n" \
@@ -611,9 +584,6 @@ static const char * const src_ocl_kernel2 = \
 "	__local RNS * const Z4 = &Z[4 * i128];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 512 / 4\n" \
-"	__attribute__((reqd_work_group_size(512 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void square512(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -648,9 +618,6 @@ static const char * const src_ocl_kernel2 = \
 "	__local RNS * const Z4 = &Z[4 * i256];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 1024 / 4\n" \
-"	__attribute__((reqd_work_group_size(1024 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void square1024(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -687,9 +654,6 @@ static const char * const src_ocl_kernel2 = \
 "	__local RNS * const Z4 = &Z[4 * i512];\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 2048 / 4\n" \
-"	__attribute__((reqd_work_group_size(2048 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void square2048(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
@@ -765,9 +729,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 512 / 4\n" \
-"	__attribute__((reqd_work_group_size(512 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void fwd512p(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -780,9 +741,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 1024 / 4\n" \
-"	__attribute__((reqd_work_group_size(1024 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void fwd1024p(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -795,9 +753,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 2048 / 4\n" \
-"	__attribute__((reqd_work_group_size(2048 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void fwd2048p(__global RNS * restrict const z, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
@@ -885,9 +840,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 512 / 4\n" \
-"	__attribute__((reqd_work_group_size(512 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void mul512(__global RNS * restrict const z, __global const RNS * restrict const zp, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_512();\n" \
@@ -906,9 +858,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 1024 / 4\n" \
-"	__attribute__((reqd_work_group_size(1024 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void mul1024(__global RNS * restrict const z, __global const RNS * restrict const zp, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_1024();\n" \
@@ -927,9 +876,6 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"#if MAX_WORK_GROUP_SIZE >= 2048 / 4\n" \
-"	__attribute__((reqd_work_group_size(2048 / 4, 1, 1)))\n" \
-"#endif\n" \
 "void mul2048(__global RNS * restrict const z, __global const RNS * restrict const zp, __global const RNS_W * restrict const w)\n" \
 "{\n" \
 "	DECLARE_VAR_2048();\n" \
