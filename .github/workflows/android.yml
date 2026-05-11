@@ -63,5 +63,4 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: android-latest
-          retention-days: 1
           path: ./bin/*
