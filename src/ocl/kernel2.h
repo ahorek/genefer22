@@ -18,7 +18,7 @@ static const char * const src_ocl_kernel2 = \
 "*/\n" \
 "\n" \
 "#if __OPENCL_VERSION__ >= 120\n" \
-"	#define INLINE	static inline\n" \
+"	#define INLINE\n" \
 "#else\n" \
 "	#define INLINE\n" \
 "#endif\n" \
