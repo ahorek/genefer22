@@ -376,7 +376,7 @@ public:
 	}
 
 public:
-	size_t getMaxWorkGroupSize() const { return _maxWorkGroupSize; }
+	size_t getMaxWorkGroupSize() const { return 256; }
 	size_t getLocalMemSize() const { return _localMemSize; }
 	size_t getTimerResolution() const { return _timerResolution; }
 	bool isIntel() const { return (_vendor == EVendor::INTEL); }
