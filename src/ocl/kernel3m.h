@@ -9,4 +9,4 @@ Please give feedback to the authors if improvement is realized. It is distribute
 
 #include <cstdint>
 
-static const char * const src_ocl_kernel1g = "";
+static const char * const src_ocl_kernel3m = "";

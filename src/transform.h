@@ -17,7 +17,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 class transform
 {
 protected:
-	enum class EKind { DTvec2, DTvec4, DTvec8, IBDTvec2, IBDTvec4, IBDTvec8, NTT2, NTT3, NTT3cpu, SBDTvec2, SBDTvec4, SBDTvec8, NTT1g, NTT2m, NTT3m }; 
+	enum class EKind { DTvec2, DTvec4, DTvec8, IBDTvec2, IBDTvec4, IBDTvec8, NTT2, NTT3, NTT3cpu, SBDTvec2, SBDTvec4, SBDTvec8, NTT2s, NTT3s };
 
 private:
 	const size_t _size;
@@ -45,6 +45,7 @@ public:
 	virtual void saveContext(file & cFile, const size_t num_regs) const = 0;
 
 	virtual double getError() const { return 0; }
+	virtual void info() const {}
 
 private:
 #if defined(GPU)
