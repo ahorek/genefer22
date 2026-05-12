@@ -17,6 +17,7 @@ Please give feedback to the authors if improvement is realized. It is distribute
 #include "ocl/kernels.h"
 
 // #define USE_WI	1
+// #define	TUNE	1
 
 #define VSIZE	4
 
@@ -62,7 +63,7 @@ typedef cl_long		int64;
 class ZP
 {
 protected:
-	cl_uint _n;
+	uint32 _n;
 
 public:
 	ZP() {}
@@ -122,18 +123,18 @@ typedef ZPT<P3S, Q3S, R3S, H3S> ZP3;
 
 // Warning: DECLARE_VAR_xx in kernels.cl must be modified if BLKxx = 1 or != 1.
 
-#define BLK32m		32		// local size =   4KB, workgroup size =  256 / VSIZE
-#define BLK64m		16		// local size =   4KB, workgroup size =  256 / VSIZE
-#define BLK128m		8		// local size =   4KB, workgroup size =  256 / VSIZE
-#define BLK256m		4		// local size =   4KB, workgroup size =  256 / VSIZE
-#define BLK512m		2		// local size =   4KB, workgroup size =  256 / VSIZE
-#define BLK1024m	1		// local size =   4KB, workgroup size =  256 / VSIZE
-#define BLK2048m	1		// local size =   8KB, workgroup size =  512 / VSIZE
-#define BLK4096m	1		// local size =  16KB, workgroup size = 1024 / VSIZE
+#define BLK32s		32		// local size =   4KB, workgroup size =  256 / VSIZE
+#define BLK64s		16		// local size =   4KB, workgroup size =  256 / VSIZE
+#define BLK128s		8		// local size =   4KB, workgroup size =  256 / VSIZE
+#define BLK256s		4		// local size =   4KB, workgroup size =  256 / VSIZE
+#define BLK512s		2		// local size =   4KB, workgroup size =  256 / VSIZE
+#define BLK1024s	1		// local size =   4KB, workgroup size =  256 / VSIZE
+#define BLK2048s	1		// local size =   8KB, workgroup size =  512 / VSIZE
+#define BLK4096s	1		// local size =  16KB, workgroup size = 1024 / VSIZE
 
-#define CHUNK64m	4		// local size =  VSIZE * 1KB, workgroup size = 64
-#define CHUNK256m	2		// local size =  VSIZE * 2KB, workgroup size = 128
-#define CHUNK1024m	1		// local size =  VSIZE * 4KB, workgroup size = 256
+#define CHUNK64s	4		// local size =  VSIZE * 1KB, workgroup size = 64
+#define CHUNK256s	4		// local size =  VSIZE * 4KB, workgroup size = 256
+#define CHUNK1024s	1		// local size =  VSIZE * 4KB, workgroup size = 256
 
 #define CREATE_TRANSFORM_KERNEL(name) _##name = createTransformKernel(#name);
 #define CREATE_TRANSFORM_KERNELP(name) _##name = createTransformKernel(#name, false);
@@ -142,19 +143,18 @@ typedef ZPT<P3S, Q3S, R3S, H3S> ZP3;
 #define CREATE_SETCOPY_KERNEL(name) _##name = createSetCopyKernel(#name);
 #define CREATE_COPYP_KERNEL(name) _##name = createCopypKernel(#name);
 
-#define DEFINE_FORWARD(u) void forward##u(const int lm) { ek_fb(_forward##u, lm - LVSIZE, u / 4 * CHUNK##u##m, 4 * VSIZE); }
-#define DEFINE_BACKWARD(u) void backward##u(const int lm) { ek_fb(_backward##u, lm - LVSIZE, u / 4 * CHUNK##u##m, 4 * VSIZE); }
-#define DEFINE_FORWARD0(u) void forward##u##_0() { ek(_forward##u##_0, u / 4 * CHUNK##u##m, 4 * VSIZE); }
+#define DEFINE_FORWARD(u) void forward##u(const int lm) { ek_fb(_forward##u, lm - LVSIZE, u / 4 * CHUNK##u##s, 4 * VSIZE); }
+#define DEFINE_BACKWARD(u) void backward##u(const int lm) { ek_fb(_backward##u, lm - LVSIZE, u / 4 * CHUNK##u##s, 4 * VSIZE); }
+#define DEFINE_FORWARD0(u) void forward##u##_0() { ek(_forward##u##_0, u / 4 * CHUNK##u##s, 4 * VSIZE); }
 
-#define DEFINE_SQUARE(u) void square##u() { ek(_square##u, (u * BLK##u##m) / (4 * VSIZE), 4 * VSIZE); }
-#define DEFINE_FWDP(u) void fwd##u##p() { ek(_fwd##u##p, (u * BLK##u##m) / (4 * VSIZE), 4 * VSIZE); }
-#define DEFINE_MUL(u) void mul##u() { ek(_mul##u, (u * BLK##u##m) / (4 * VSIZE), 4 * VSIZE); }
+#define DEFINE_SQUARE(u) void square##u() { ek(_square##u, (u * BLK##u##s) / (4 * VSIZE), 4 * VSIZE); }
+#define DEFINE_FWDP(u) void fwd##u##p() { ek(_fwd##u##p, (u * BLK##u##s) / (4 * VSIZE), 4 * VSIZE); }
+#define DEFINE_MUL(u) void mul##u() { ek(_mul##u, (u * BLK##u##s) / (4 * VSIZE), 4 * VSIZE); }
 
 #define DEFINE_FORWARDP(u) \
 	void forward##u##p(const int lm) { setTransformArgs(_forward##u, false); forward##u(lm); setTransformArgs(_forward##u);	}
 #define DEFINE_FORWARDP0(u) \
 	void forward##u##p_0() { setTransformArgs(_forward##u##_0, false); forward##u##_0(); setTransformArgs(_forward##u##_0);	}
-
 
 template<size_t RNS_SIZE>
 class engines : public device
@@ -164,6 +164,7 @@ private:
 	const int _ln;
 	const bool _isBoinc;
 	const size_t _num_regs;
+	const int _lnormWGsize;
 	cl_mem _z = nullptr, _zp = nullptr, _w = nullptr, _c = nullptr;
 	cl_kernel _forward4 = nullptr, _backward4 = nullptr, _forward4_0 = nullptr;
 	cl_kernel _square2x2 = nullptr, _square4 = nullptr, _square8 = nullptr;
@@ -180,18 +181,25 @@ private:
 	cl_kernel _mul512 = nullptr, _mul1024 = nullptr, _mul2048 = nullptr, _mul4096 = nullptr;
 	cl_kernel _normalize1 = nullptr, _normalize2 = nullptr, _mulscalar = nullptr;
 	cl_kernel _set = nullptr, _copy = nullptr, _copyp = nullptr;
+#if defined(TUNE)
 	splitter * _pSplit = nullptr;
-	size_t _naLocalWS = 32, _nbLocalWS = 32, _baseModBlk = 16, _splitIndex = 0;
-	bool _first = false;
+	size_t _splitIndex = 0;
+#endif
+	// bool _first = false;
+
+	static constexpr int ilog2_32(const uint32_t n) { return 31 - __builtin_clz(n); }
 
 public:
 	engines(const platform & platform, const size_t d, const int ln, const bool isBoinc, const size_t num_regs, const bool verbose)
-		: device(platform, d, verbose), _n(size_t(1) << ln), _ln(ln), _isBoinc(isBoinc), _num_regs(num_regs) {}
+		: device(platform, d, verbose), _n(size_t(1) << ln), _ln(ln), _isBoinc(isBoinc), _num_regs(num_regs),
+		_lnormWGsize(std::min(std::max(5, ln / 2 - 3), ilog2_32(uint32_t(getMaxWorkGroupSize())))) {}
 	virtual ~engines() {}
 
 ///////////////////////////////
 
 public:
+	size_t getNormWGsize() const { return size_t(1 << _lnormWGsize); }
+
 	void allocMemory()
 	{
 #if defined(ocl_debug)
@@ -204,7 +212,7 @@ public:
 			_z = _createBuffer(CL_MEM_READ_WRITE, RNS_SIZE * n * _num_regs * sizeof(ZP));
 			_zp = _createBuffer(CL_MEM_READ_WRITE, RNS_SIZE * n * sizeof(ZP));
 			_w = _createBuffer(CL_MEM_READ_ONLY, RNS_SIZE * n * sizeof(ZP));
-			_c = _createBuffer(CL_MEM_READ_WRITE, n / 4 * sizeof(cl_long));
+			_c = _createBuffer(CL_MEM_READ_WRITE, n / 4 * sizeof(int64));
 		}
 	}
 
@@ -232,14 +240,14 @@ private:
 		return kernel;
 	}
 
-	cl_kernel createNormalizeKernel(const char * const kernelName, const cl_uint b, const cl_uint b_inv, const cl_int b_s)
+	cl_kernel createNormalizeKernel(const char * const kernelName, const uint32 b, const uint32 b_inv, const int32 b_s)
 	{
 		cl_kernel kernel = _createKernel(kernelName);
 		_setKernelArg(kernel, 0, sizeof(cl_mem), &_z);
 		_setKernelArg(kernel, 1, sizeof(cl_mem), &_c);
-		_setKernelArg(kernel, 2, sizeof(cl_uint), &b);
-		_setKernelArg(kernel, 3, sizeof(cl_uint), &b_inv);
-		_setKernelArg(kernel, 4, sizeof(cl_int), &b_s);
+		_setKernelArg(kernel, 2, sizeof(uint32), &b);
+		_setKernelArg(kernel, 3, sizeof(uint32), &b_inv);
+		_setKernelArg(kernel, 4, sizeof(int32), &b_s);
 		return kernel;
 	}
 
@@ -274,8 +282,6 @@ public:
 		std::ostringstream ss; ss << "Create ocl kernels." << std::endl;
 		pio::display(ss.str());
 #endif
-		const int ln = _ln;
-
 		CREATE_TRANSFORM_KERNEL(forward4);
 		CREATE_TRANSFORM_KERNEL(backward4);
 		CREATE_TRANSFORM_KERNEL(forward4_0);
@@ -329,9 +335,9 @@ public:
 		CREATE_MUL_KERNEL(mul2048);
 		CREATE_MUL_KERNEL(mul4096);
 #endif
-		const cl_uint b_ui = static_cast<cl_uint>(b);
-		const cl_int b_s = static_cast<cl_int>(31 - __builtin_clz(b) - 1);
-		const cl_uint b_inv = static_cast<cl_uint>((static_cast<uint64_t>(1) << (b_s + 32)) / b);
+		const uint32 b_ui = static_cast<uint32>(b);
+		const int32 b_s = static_cast<int32>(31 - __builtin_clz(b) - 1);
+		const uint32 b_inv = static_cast<uint32>((static_cast<uint64_t>(1) << (b_s + 32)) / b);
 		CREATE_NORMALIZE_KERNEL(normalize1, b_ui, b_inv, b_s);
 		CREATE_NORMALIZE_KERNEL(normalize2, b_ui, b_inv, b_s);
 		CREATE_NORMALIZE_KERNEL(mulscalar, b_ui, b_inv, b_s);
@@ -340,7 +346,9 @@ public:
 		CREATE_SETCOPY_KERNEL(copy);
 		CREATE_COPYP_KERNEL(copyp);
 
-		_pSplit = new splitter(size_t(ln), CHUNK256m, CHUNK1024m, sizeof(ZP), VSIZE, 12, getLocalMemSize(), getMaxWorkGroupSize());
+#if defined(TUNE)
+		_pSplit = new splitter(size_t(_ln), CHUNK256s, CHUNK1024s, sizeof(ZP), VSIZE, 12, getLocalMemSize(), getMaxWorkGroupSize());
+#endif
 	}
 
 	void releaseKernels()
@@ -349,8 +357,9 @@ public:
 		std::ostringstream ss; ss << "Release ocl kernels." << std::endl;
 		pio::display(ss.str());
 #endif
+#if defined(TUNE)
 		delete _pSplit;
-
+#endif
 		_releaseKernel(_forward4); _releaseKernel(_backward4); _releaseKernel(_forward4_0);
 		_releaseKernel(_square2x2); _releaseKernel(_square4); _releaseKernel(_square8);
 		_releaseKernel(_fwd4p); _releaseKernel(_fwd8p);
@@ -390,10 +399,10 @@ private:
 	void ek_fb(cl_kernel & kernel, const int lm, const size_t localWorkSize, const size_t step)
 	{
 		const size_t n_s = _n / step;
-		const cl_int ilm = static_cast<cl_int>(lm);
-		const cl_uint is = static_cast<cl_uint>(n_s >> lm);
-		_setKernelArg(kernel, 2, sizeof(cl_int), &ilm);
-		_setKernelArg(kernel, 3, sizeof(cl_uint), &is);
+		const int32 ilm = static_cast<int32>(lm);
+		const uint32 is = static_cast<uint32>(n_s >> lm);
+		_setKernelArg(kernel, 2, sizeof(int32), &ilm);
+		_setKernelArg(kernel, 3, sizeof(uint32), &is);
 		_executeKernel(kernel, RNS_SIZE * n_s, localWorkSize);
 	}
 
@@ -467,7 +476,7 @@ private:
 	DEFINE_FORWARDP0(256);
 	DEFINE_FORWARDP0(1024);
 
-private:
+#if defined(TUNE)
 	void _mul(const size_t sIndex, const bool isSquare)
 	{
 #if defined(CHECK_FUNC_1)
@@ -551,32 +560,60 @@ private:
 			lm += int(k);
 		}
 	}
+#endif	// TUNE
 
 public:
 	void square()
 	{
+		// if (_first) { info(); _first = false; }
+
+#if defined(TUNE)
+		const size_t splitIndex =
 #if defined(CHECK_ALL_FUNCTIONS)
-		_mul(size_t(rand()) % _pSplit->getSize(), true);
+		size_t(rand()) % _pSplit->getSize();
 #else
-		_mul(_splitIndex, true);
+		_splitIndex;
 #endif
-		if (_first)
-		{
-			info();
-			_first = false;
-		} 
+		_mul(splitIndex, true);
+#else
+		const int ln = _ln;
+		if (ln == 14) { forward64_0(); square256(); backward64(14 - 6); }
+		else if (ln == 15) { forward64_0(); square512(); backward64(15 - 6); }
+		else if (ln == 16) { forward64_0(); square1024(); backward64(16 - 6); }
+		else if (ln == 17) { forward64_0(); square2048(); backward64(17 - 6); }
+		else if (ln == 18) { forward256_0(); square1024(); backward256(18 - 8); }
+		else if (ln == 19) { forward256_0(); square2048(); backward256(19 - 8); }
+		else if (ln == 20) { forward256_0(); square4096(); backward256(20 - 8); }
+		else if (ln == 21) { forward64_0(); forward64(21 - 2 * 6); square512(); backward64(21 - 2 * 6); backward64(21 - 6); }
+		else if (ln == 22) { forward1024_0(); square4096(); backward1024(22 - 10); }
+		else { forward64_0(); forward64(23 - 2 * 6); square2048(); backward64(23 - 2 * 6); backward64(23 - 6); }
+#endif
 	}
 
 	void mul()
 	{
+#if defined(TUNE)
 		_mul(_splitIndex, false);
+#else
+		const int ln = _ln;
+		if (ln == 14) { forward64_0(); mul256(); backward64(14 - 6); }
+		else if (ln == 15) { forward64_0(); mul512(); backward64(15 - 6); }
+		else if (ln == 16) { forward64_0(); mul1024(); backward64(16 - 6); }
+		else if (ln == 17) { forward64_0(); mul2048(); backward64(17 - 6); }
+		else if (ln == 18) { forward256_0(); mul1024(); backward256(18 - 8); }
+		else if (ln == 19) { forward256_0(); mul2048(); backward256(19 - 8); }
+		else if (ln == 20) { forward256_0(); mul4096(); backward256(20 - 8); }
+		else if (ln == 21) { forward64_0(); forward64(21 - 2 * 6); mul512(); backward64(21 - 2 * 6); backward64(21 - 6); }
+		else if (ln == 22) { forward1024_0(); mul4096(); backward1024(22 - 10); }
+		else { forward64_0(); forward64(23 - 2 * 6); mul2048(); backward64(23 - 2 * 6); backward64(23 - 6); }
+#endif
 	}
 
 	void initMultiplicand(const size_t src)
 	{
-		const cl_uint isrc = static_cast<cl_uint>(src * RNS_SIZE * _n);
-		_setKernelArg(_copyp, 2, sizeof(cl_uint), &isrc);
-		_executeKernel(_copyp, RNS_SIZE * _n);
+		const uint32 isrc = static_cast<uint32>(src * RNS_SIZE * _n / 4);
+		_setKernelArg(_copyp, 2, sizeof(uint32), &isrc);
+		_executeKernel(_copyp, RNS_SIZE * _n / 4);
 
 #if defined(CHECK_FUNC_1)
 		if (_ln == 11) { forward256p_0(); fwd8p(); return; }
@@ -599,9 +636,8 @@ public:
 		if (_ln == 14) { forward4p_0(); fwd4096p(); return; }
 #endif
 
-		const splitter * const pSplit = _pSplit;
 #if defined(CHECK_ALL_FUNCTIONS)
-		_splitIndex = size_t(rand()) % pSplit->getSize();
+		_splitIndex = size_t(rand()) % _pSplit->getSize();
 #endif
 
 		int lm = _ln;
@@ -613,6 +649,8 @@ public:
 		return;
 #endif
 
+#if defined(TUNE)
+		const splitter * const pSplit = _pSplit;
 		const size_t sIndex = _splitIndex;
 		const size_t s = pSplit->getPartSize(sIndex);
 
@@ -640,75 +678,59 @@ public:
 		else if (lm == 7) fwd128p();
 		else if (lm == 6) fwd64p();
 		else if (lm == 5) fwd32p();
+#else
+		if (lm == 14) { forward64p_0(); fwd256p(); }
+		else if (lm == 15) { forward64p_0(); fwd512p(); }
+		else if (lm == 16) { forward64p_0(); fwd1024p(); }
+		else if (lm == 17) { forward64p_0(); fwd2048p(); }
+		else if (lm == 18) { forward256p_0(); fwd1024p(); }
+		else if (lm == 19) { forward256p_0(); fwd2048p(); }
+		else if (lm == 20) { forward256p_0(); fwd4096p(); }
+		else if (lm == 21) { forward64p_0(); forward64p(21 - 2 * 6); fwd512p(); }
+		else if (lm == 22) { forward1024p_0(); fwd4096p(); }
+		else { forward64p_0(); forward64p(23 - 2 * 6); fwd2048p(); }
+#endif
 	}
 
 	void set(const uint32_t a)
 	{
-		const cl_uint ia = static_cast<cl_uint>(a);
-		_setKernelArg(_set, 1, sizeof(cl_uint), &ia);
-		_executeKernel(_set, RNS_SIZE * _n);
+		const uint32 ia = static_cast<uint32>(a);
+		_setKernelArg(_set, 1, sizeof(uint32), &ia);
+		_executeKernel(_set, RNS_SIZE * _n / 4);
 	}
 
 	void copy(const size_t dst, const size_t src)
 	{
-		const cl_uint idst = static_cast<cl_uint>(dst * RNS_SIZE *_n), isrc = static_cast<cl_uint>(src * RNS_SIZE *_n);
-		_setKernelArg(_copy, 1, sizeof(cl_uint), &idst);
-		_setKernelArg(_copy, 2, sizeof(cl_uint), &isrc);
-		_executeKernel(_copy, RNS_SIZE * _n);
+		const uint32 idst = static_cast<uint32>(dst * RNS_SIZE * _n / 4), isrc = static_cast<uint32>(src * RNS_SIZE * _n / 4);
+		_setKernelArg(_copy, 1, sizeof(uint32), &idst);
+		_setKernelArg(_copy, 2, sizeof(uint32), &isrc);
+		_executeKernel(_copy, RNS_SIZE * _n / 4);
 	}
 
 public:
 	void baseMod(const bool dup)
 	{
-		const cl_uint blk = static_cast<cl_uint>(_baseModBlk);
-		const cl_int sblk = dup ? -static_cast<cl_int>(blk) : static_cast<cl_int>(blk);
-		const size_t size = _n / blk;
+		const int32 idup = dup ? 1 : 0;
+		const size_t size = _n / 4;
 
-		_setKernelArg(_normalize1, 5, sizeof(cl_int), &sblk);
-		_executeKernel(_normalize1, size, std::min(size, _naLocalWS));
-
-		_setKernelArg(_normalize2, 5, sizeof(cl_uint), &blk);
-		_executeKernel(_normalize2, size, std::min(size, _nbLocalWS));
+		_setKernelArg(_normalize1, 5, sizeof(int32), &idup);
+		_executeKernel(_normalize1, size, 1u << _lnormWGsize);
+		_executeKernel(_normalize2, size >> _lnormWGsize);
 	}
 
-public:
 	void baseModMul(const int a)
 	{
 		baseMod(false);
 
-		const cl_uint blk = static_cast<cl_uint>(_baseModBlk);
-		const size_t size = _n / blk;
-		const cl_int ia = static_cast<cl_int>(a);
+		const int32 ia = static_cast<int32>(a);
+		const size_t size = _n / 4;
 
-		cl_uint index1 = 5;
-		_setKernelArg(_mulscalar, index1++, sizeof(cl_int), &blk);
-		_setKernelArg(_mulscalar, index1++, sizeof(cl_int), &ia);
-		_executeKernel(_mulscalar, size, std::min(size, _naLocalWS));
-
-		cl_uint index2 = 5;
-		_setKernelArg(_normalize2, index2++, sizeof(cl_uint), &blk);
-		_executeKernel(_normalize2, size, std::min(size, _nbLocalWS));
+		_setKernelArg(_mulscalar, 5, sizeof(int32), &ia);
+		_executeKernel(_mulscalar, size, 1u << _lnormWGsize);
+		_executeKernel(_normalize2, size >> _lnormWGsize);
 	}
 
-private:
-	void baseModTune(const size_t count, const size_t blk, const size_t n3aLocalWS, const size_t n3bLocalWS, const ZP * const Z)
-	{
-		const cl_uint cblk = static_cast<cl_uint>(blk);
-		const cl_int sblk = static_cast<cl_int>(blk);
-		const size_t size = _n / blk;
-
-		for (size_t i = 0; i != count; ++i)
-		{
-			writeMemory_z(Z);
-
-			_setKernelArg(_normalize1, 5, sizeof(cl_int), &sblk);
-			_executeKernel(_normalize1, size, std::min(size, n3aLocalWS));
-
-			_setKernelArg(_normalize2, 5, sizeof(cl_uint), &cblk);
-			_executeKernel(_normalize2, size, std::min(size, n3bLocalWS));
-		}
-	}
-
+#if defined(TUNE)
 private:
 	void squareTune(const size_t count, const size_t sIndex, const ZP * const Z)
 	{
@@ -720,7 +742,7 @@ private:
 	}
 
 public:
-	void tune(const uint32_t base)
+	void tune()
 	{
 		const size_t n = _n;
 
@@ -734,68 +756,6 @@ public:
 
 		setProfiling(true);
 
-		resetProfiles();
-		baseModTune(1, 16, 0, 0, Z);
-		const cl_ulong time = getProfileTime();
-		if (time == 0) { delete[] Z; setProfiling(false); return; }
-		// 410 tests, 0.1 second = 10^8 ns
-		const size_t count = std::min(std::max(size_t(100000000 / (410 * time)), size_t(2)), size_t(100));
-
-		cl_ulong minT = cl_ulong(-1);
-
-		size_t bMin = 4;
-		while (bMin < log(n * static_cast<double>(base + 2)) / log(static_cast<double>(base))) bMin *= 2;
-
-		const double maxSqr = n * (base * static_cast<double>(base));
-		for (size_t b = bMin; b <= 64; b *= 2)
-		{
-			// Check convergence
-			if (log(maxSqr) >= base * log(static_cast<double>(b))) continue;
-
-			resetProfiles();
-			baseModTune(count, b, 0, 0, Z);
-			cl_ulong minT_b = getProfileTime();
-#if defined(ocl_debug)
-			// std::ostringstream ss; ss << "b = " << b << ", sa = 0, sb = 0, count = " << count << ", t = " << minT_b << "." << std::endl;
-			// pio::display(ss.str());
-#endif
-			size_t minsa = 0, minsb = 0;
-
-			for (size_t sa = 1; sa <= 256; sa *= 2)
-			{
-				for (size_t sb = 1; sb <= 256; sb *= 2)
-				{
-					resetProfiles();
-					baseModTune(count, b, sa, sb, Z);
-					const cl_ulong t = getProfileTime();
-#if defined(ocl_debug)
-					// std::ostringstream ss; ss << "b = " << b << ", sa = " << sa << ", sb = " << sb << ", count = " << count << ", t = " << t << "." << std::endl;
-					// pio::display(ss.str());
-#endif
-					if (t < minT_b)
-					{
-						minT_b = t;
-						minsa = sa;
-						minsb = sb;
-					}
-				}
-			}
-
-			if (minT_b < minT)
-			{
-				minT = minT_b;
-				_naLocalWS = minsa;
-				_nbLocalWS = minsb;
-				_baseModBlk = b;
-			}
-		}
-#if defined(ocl_debug)
-		{
-			std::ostringstream ss; ss << "baseModBlk = " << _baseModBlk << ", WorkgroupSize1 = " << _naLocalWS << ", WorkgroupSize2 = " << _nbLocalWS << "." << std::endl;
-			pio::display(ss.str());
-		}
-#endif
-
 		const splitter * const pSplit = _pSplit;
 		const size_t ns = pSplit->getSize();
 		if (ns > 1)
@@ -804,7 +764,7 @@ public:
 			for (size_t i = 0; i < ns; ++i)
 			{
 				resetProfiles();
-				squareTune(2, i, Z);
+				squareTune(16, i, Z);
 				const cl_ulong t = getProfileTime();
 
 #if defined(ocl_debug)
@@ -828,7 +788,6 @@ public:
 			pio::display(ss.str());
 		}
 #endif
-
 		delete[] Z;
 
 		setProfiling(false);
@@ -840,6 +799,8 @@ public:
 		std::ostringstream ss; ss << "split:";
 		for (size_t sIndex = 0, ns = _pSplit->getSize(); sIndex < ns; ++sIndex)
 		{
+			if (sIndex != 0) ss << ",";
+
 			int lm = _ln;
 			const size_t s = _pSplit->getPartSize(sIndex);
 			for (size_t i = 1; i < s; ++i)
@@ -852,12 +813,12 @@ public:
 			ss << " s" << lm;
 
 			if (sIndex == _splitIndex) ss << " *";
-			ss << ",";
 		}
 
-		ss << " blk = " << _baseModBlk << ", wsize1 = " << _naLocalWS << ", wsize2 = " << _nbLocalWS << "." << std::endl;
+		ss << "." << std::endl;
 		pio::display(ss.str());
 	}
+#endif	// TUNE
 };
 
 
@@ -875,10 +836,10 @@ public:
 				 const cl_platform_id boinc_platform_id, const cl_device_id boinc_device_id, const bool verbose)
 		: transform(size_t(1) << n, n, b, (RNS_SIZE == 2) ? EKind::NTT2s : EKind::NTT3s),
 #if defined(USE_WI)
-		_mem_size(RNS_SIZE * (size_t(1) << n) * (num_regs + 2) * sizeof(ZP) + (size_t(1) << n) / 4 * sizeof(cl_long)),
+		_mem_size(RNS_SIZE * (size_t(1) << n) * (num_regs + 2) * sizeof(ZP) + (size_t(1) << n) / 4 * sizeof(int64)),
 		_cache_size(RNS_SIZE * (size_t(1) << n) * 2 * sizeof(ZP)),
 #else
-		_mem_size(RNS_SIZE * (size_t(1) << n) * (2 * num_regs + 3) / 2 * sizeof(ZP) + (size_t(1) << n) / 4 * sizeof(cl_long)),
+		_mem_size(RNS_SIZE * (size_t(1) << n) * (2 * num_regs + 3) / 2 * sizeof(ZP) + (size_t(1) << n) / 4 * sizeof(int64)),
 		_cache_size(RNS_SIZE * (size_t(1) << n) * 3 / 2 * sizeof(ZP)),
 #endif
 		_num_regs(num_regs), _z(new ZP[RNS_SIZE * (size_t(1) << n) * num_regs])
@@ -907,19 +868,23 @@ public:
 #if defined(USE_WI)
 		src << "#define USE_WI\t" << 1 << std::endl;
 #endif
-		src << "#define BLK32\t" << BLK32m << std::endl;
-		src << "#define BLK64\t" << BLK64m << std::endl;
-		src << "#define BLK128\t" << BLK128m << std::endl;
-		src << "#define BLK256\t" << BLK256m << std::endl;
-		src << "#define BLK512\t" << BLK512m << std::endl;
+		src << "#define BLK32\t" << BLK32s << std::endl;
+		src << "#define BLK64\t" << BLK64s << std::endl;
+		src << "#define BLK128\t" << BLK128s << std::endl;
+		src << "#define BLK256\t" << BLK256s << std::endl;
+		src << "#define BLK512\t" << BLK512s << std::endl;
+		src << "#define BLK1024\t" << BLK1024s << std::endl;
 
-		src << "#define CHUNK64\t" << CHUNK64m << std::endl;
-		src << "#define CHUNK256\t" << CHUNK256m << std::endl;
-		src << "#define CHUNK1024\t" << CHUNK1024m << std::endl;
+		src << "#define CHUNK64\t" << CHUNK64s << std::endl;
+		src << "#define CHUNK256\t" << CHUNK256s << std::endl;
+		src << "#define CHUNK1024\t" << CHUNK1024s << std::endl;
 
 #if defined(CHECK_RADIX4_FUNCTIONS)
 		src << "#define SHORT_VER\t" << 1 << std::endl;
 #endif
+
+		src << "#define NORM_WG_SZ\t" << _pEngine->getNormWGsize() << std::endl;
+
 		src << "#define MAX_WG_SZ\t" << _pEngine->getMaxWorkGroupSize() << std::endl << std::endl;
 
 		if (isBoinc || !_pEngine->readOpenCL("ocl/kernels.cl", "src/ocl/kernels.h", "src_ocl_kernels", src)) src << src_ocl_kernels;
@@ -962,7 +927,9 @@ public:
 			delete[] wr3;
 		}
 
-		_pEngine->tune(b);
+#if defined(TUNE)
+		_pEngine->tune();
+#endif
 	}
 
 	virtual ~transformGPUs()
@@ -1071,6 +1038,8 @@ public:
 
 	void info() const override
 	{
+#if defined(TUNE)
 		_pEngine->info();
+#endif
 	}
 };
