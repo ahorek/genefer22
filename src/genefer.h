@@ -216,7 +216,7 @@ private:
 		return dcount;
 	}
 
-	static void clearline() { pio::display("                                                            \r"); }
+	static void clearline() { pio::display("                                                \r"); }
 
 	int _readContext(const std::string & filename, const int where, const bool fast_checkpoints, int & i, double & elapsedTime)
 	{
@@ -1274,7 +1274,7 @@ private:
 
 		transform * const pTransform = _transform;
 
-		// pTransform->info();
+		pTransform->info();
 
 		_gi = new gint(size_t(1) << n, b);
 		mpz_t exponent; mpz_init(exponent); mpz_ui_pow_ui(exponent, 6, 50);
@@ -1294,7 +1294,7 @@ private:
 			static volatile bool _break;
 
 			_break = false;
-			std::thread delay([=]() { std::this_thread::sleep_for(std::chrono::seconds(10)); _break = true; }); delay.detach();
+			std::thread delay([=]() { std::this_thread::sleep_for(std::chrono::seconds(5)); _break = true; }); delay.detach();
 
 			watch chrono(0);
 			size_t i = 1;

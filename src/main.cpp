@@ -117,7 +117,7 @@ private:
 #endif
 
 		std::ostringstream ss;
-		ss << name << ext << " version 25.04.0 (" << sysver << ssc.str() << ")" << std::endl;
+		ss << name << ext << " version 25.00.0 (" << sysver << ssc.str() << ")" << std::endl;
 		ss << "Copyright (c) 2022, Yves Gallot" << std::endl;
 		ss << name << " is free source code, under the MIT license." << std::endl;
 		if (nl)
@@ -404,15 +404,10 @@ public:
 
 			if (g.check(1000000000, 11, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;	// 0x43c6cc5326e5c77f
 			if (g.check(1000000000, 12, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;	// 0x4e43a5b93273c649
-			// if (g.check(999955696, 13, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
-			// if (g.check(999944006, 14, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
-
-			// if (g.check(101836, 11, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
-			// if (g.check(100540, 12, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
-			// if (g.check(111850, 13, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
-			// if (g.check(67234, 14, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
-			return;*/
-
+			if (g.check(1000001960, 13, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
+			if (g.check(1000032014, 14, genefer::EMode::Quick, device, nthreads, impl, 5) != genefer::EReturn::Success) return;
+			return;
+		
 			// for (size_t i = 0; i < count; ++i)
 			// {
 				// g.check(bp[i] + 0, 12 + i, genefer::EMode::Quick, device, nthreads, impl, depth);
