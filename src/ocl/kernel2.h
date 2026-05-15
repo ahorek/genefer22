@@ -24,13 +24,13 @@ static const char * const src_ocl_kernel2 = \
 "#endif\n" \
 "\n" \
 "typedef uint	sz_t;\n" \
-"typedef uint	uint32;\n" \
-"typedef int		int32;\n" \
-"typedef ulong	uint64;\n" \
-"typedef long	int64;\n" \
-"typedef uint2	uint32_2;\n" \
-"typedef uint4	uint32_4;\n" \
-"typedef int4	int32_4;\n" \
+"typedef uint	uint_32;\n" \
+"typedef int		int_32;\n" \
+"typedef ulong	uint_64;\n" \
+"typedef long	int_64;\n" \
+"typedef uint2	uint_32_2;\n" \
+"typedef uint4	uint_32_4;\n" \
+"typedef int4	int_32_4;\n" \
 "\n" \
 "#if !defined(LNSIZE)\n" \
 "#define LNSIZE		16\n" \
@@ -55,19 +55,19 @@ static const char * const src_ocl_kernel2 = \
 "#define MAX_WORK_GROUP_SIZE	256\n" \
 "#endif\n" \
 "\n" \
-"#define P1P2	(P1 * (uint64)(P2))\n" \
+"#define P1P2	(P1 * (uint_64)(P2))\n" \
 "\n" \
 "// --- mod arith ---\n" \
 "\n" \
-"INLINE uint32 _addMod(const uint32 lhs, const uint32 rhs, const uint32 p)\n" \
+"INLINE uint_32 _addMod(const uint_32 lhs, const uint_32 rhs, const uint_32 p)\n" \
 "{\n" \
-"	const uint32 c = (lhs >= p - rhs) ? p : 0;\n" \
+"	const uint_32 c = (lhs >= p - rhs) ? p : 0;\n" \
 "	return lhs + rhs - c;\n" \
 "}\n" \
 "\n" \
-"INLINE uint32 _subMod(const uint32 lhs, const uint32 rhs, const uint32 p)\n" \
+"INLINE uint_32 _subMod(const uint_32 lhs, const uint_32 rhs, const uint_32 p)\n" \
 "{\n" \
-"	const uint32 c = (lhs < rhs) ? p : 0;\n" \
+"	const uint_32 c = (lhs < rhs) ? p : 0;\n" \
 "	return lhs - rhs + c;\n" \
 "}\n" \
 "\n" \
@@ -78,62 +78,62 @@ static const char * const src_ocl_kernel2 = \
 "// r = lhs * rhs * 2^-32 mod p\n" \
 "// If lhs = x * 2^32 and rhs = y * 2^32 then r = (x * y) * 2^32 mod p.\n" \
 "// If lhs = x and rhs = y * 2^32 then r = x * y mod p.\n" \
-"INLINE uint32 _mulMonty(const uint32 lhs, const uint32 rhs, const uint32 p, const uint32 q)\n" \
+"INLINE uint_32 _mulMonty(const uint_32 lhs, const uint_32 rhs, const uint_32 p, const uint_32 q)\n" \
 "{\n" \
-"	const uint64 t = lhs * (uint64)(rhs);\n" \
-"	const uint32 lo = (uint32)(t), hi = (uint32)(t >> 32);\n" \
-"	const uint32 mp = mul_hi(lo * q, p);\n" \
+"	const uint_64 t = lhs * (uint_64)(rhs);\n" \
+"	const uint_32 lo = (uint_32)(t), hi = (uint_32)(t >> 32);\n" \
+"	const uint_32 mp = mul_hi(lo * q, p);\n" \
 "	return _subMod(hi, mp, p);\n" \
 "}\n" \
 "\n" \
 "// Conversion into Montgomery form\n" \
-"INLINE uint32 _toMonty(const uint32 n, const uint32 r2, const uint32 p, const uint32 q)\n" \
+"INLINE uint_32 _toMonty(const uint_32 n, const uint_32 r2, const uint_32 p, const uint_32 q)\n" \
 "{\n" \
 "	// n * (2^32)^2 = (n * 2^32) * (1 * 2^32)\n" \
 "	return _mulMonty(n, r2, p, q);\n" \
 "}\n" \
 "\n" \
 "// Conversion out of Montgomery form\n" \
-"// INLINE uint32 _fromMonty(const uint32 n, const uint32 p, const uint32 q)\n" \
+"// INLINE uint_32 _fromMonty(const uint_32 n, const uint_32 p, const uint_32 q)\n" \
 "// {\n" \
 "// 	// If n = x * 2^32 mod p then _mulMonty(n, 1, p, q) = x.\n" \
-"// 	const uint32 mp = mul_hi(n * q, p);\n" \
+"// 	const uint_32 mp = mul_hi(n * q, p);\n" \
 "// 	return (mp != 0) ? p - mp : 0;\n" \
 "// }\n" \
 "\n" \
-"INLINE uint32 add_P1(const uint32 lhs, const uint32 rhs) { return _addMod(lhs, rhs, P1); }\n" \
-"INLINE uint32 add_P2(const uint32 lhs, const uint32 rhs) { return _addMod(lhs, rhs, P2); }\n" \
+"INLINE uint_32 add_P1(const uint_32 lhs, const uint_32 rhs) { return _addMod(lhs, rhs, P1); }\n" \
+"INLINE uint_32 add_P2(const uint_32 lhs, const uint_32 rhs) { return _addMod(lhs, rhs, P2); }\n" \
 "\n" \
-"INLINE uint32 sub_P1(const uint32 lhs, const uint32 rhs) { return _subMod(lhs, rhs, P1); }\n" \
-"INLINE uint32 sub_P2(const uint32 lhs, const uint32 rhs) { return _subMod(lhs, rhs, P2); }\n" \
+"INLINE uint_32 sub_P1(const uint_32 lhs, const uint_32 rhs) { return _subMod(lhs, rhs, P1); }\n" \
+"INLINE uint_32 sub_P2(const uint_32 lhs, const uint_32 rhs) { return _subMod(lhs, rhs, P2); }\n" \
 "\n" \
 "// Montgomery form\n" \
-"INLINE uint32 mul_P1(const uint32 lhs, const uint32 rhs) { return _mulMonty(lhs, rhs, P1, Q1); }\n" \
-"INLINE uint32 mul_P2(const uint32 lhs, const uint32 rhs) { return _mulMonty(lhs, rhs, P2, Q2); }\n" \
+"INLINE uint_32 mul_P1(const uint_32 lhs, const uint_32 rhs) { return _mulMonty(lhs, rhs, P1, Q1); }\n" \
+"INLINE uint_32 mul_P2(const uint_32 lhs, const uint_32 rhs) { return _mulMonty(lhs, rhs, P2, Q2); }\n" \
 "\n" \
-"INLINE uint32 toMonty_P1(const uint32 lhs) { return _toMonty(lhs, R1, P1, Q1); }\n" \
-"INLINE uint32 toMonty_P2(const uint32 lhs) { return _toMonty(lhs, R2, P2, Q2); }\n" \
+"INLINE uint_32 toMonty_P1(const uint_32 lhs) { return _toMonty(lhs, R1, P1, Q1); }\n" \
+"INLINE uint_32 toMonty_P2(const uint_32 lhs) { return _toMonty(lhs, R2, P2, Q2); }\n" \
 "\n" \
-"// INLINE uint32 fromMonty_P1(const uint32 lhs) { return _fromMonty(lhs, P1, Q1); }\n" \
-"// INLINE uint32 fromMonty_P2(const uint32 lhs) { return _fromMonty(lhs, P2, Q2); }\n" \
+"// INLINE uint_32 fromMonty_P1(const uint_32 lhs) { return _fromMonty(lhs, P1, Q1); }\n" \
+"// INLINE uint_32 fromMonty_P2(const uint_32 lhs) { return _fromMonty(lhs, P2, Q2); }\n" \
 "\n" \
-"INLINE int32 geti_P1(const uint32 r) { return (r > P1 / 2) ? (int32)(r - P1) : (int32)(r); }\n" \
+"INLINE int_32 geti_P1(const uint_32 r) { return (r > P1 / 2) ? (int_32)(r - P1) : (int_32)(r); }\n" \
 "\n" \
-"INLINE int64 garner2(const uint32 r1, const uint32 r2)\n" \
+"INLINE int_64 garner2(const uint_32 r1, const uint_32 r2)\n" \
 "{\n" \
-"	const uint32 u12 = mul_P1(sub_P1(r1, r2), InvP2_P1);\n" \
-"	const uint64 n = r2 + u12 * (uint64)(P2);\n" \
-"	return (n > P1P2 / 2) ? (int64)(n - P1P2) : (int64)(n);\n" \
+"	const uint_32 u12 = mul_P1(sub_P1(r1, r2), InvP2_P1);\n" \
+"	const uint_64 n = r2 + u12 * (uint_64)(P2);\n" \
+"	return (n > P1P2 / 2) ? (int_64)(n - P1P2) : (int_64)(n);\n" \
 "}\n" \
 "\n" \
 "// --- RNS ---\n" \
 "\n" \
-"typedef uint32_2	RNS;\n" \
-"typedef uint32_4	RNS2;\n" \
-"typedef uint32_2	RNS_W;\n" \
-"typedef uint32_4	RNS_W2;\n" \
+"typedef uint_32_2	RNS;\n" \
+"typedef uint_32_4	RNS2;\n" \
+"typedef uint_32_2	RNS_W;\n" \
+"typedef uint_32_4	RNS_W2;\n" \
 "\n" \
-"INLINE RNS toRNS(const int32 i) { return ((RNS)(i, i) + ((i < 0) ? (RNS)(P1, P2) : (RNS)(0, 0))); }\n" \
+"INLINE RNS toRNS(const int_32 i) { return ((RNS)(i, i) + ((i < 0) ? (RNS)(P1, P2) : (RNS)(0, 0))); }\n" \
 "\n" \
 "INLINE RNS add(const RNS lhs, const RNS rhs) { return (RNS)(add_P1(lhs.s0, rhs.s0), add_P2(lhs.s1, rhs.s1)); }\n" \
 "INLINE RNS sub(const RNS lhs, const RNS rhs) { return (RNS)(sub_P1(lhs.s0, rhs.s0), sub_P2(lhs.s1, rhs.s1)); }\n" \
@@ -990,7 +990,7 @@ static const char * const src_ocl_kernel2 = \
 "\n" \
 "// -----------------\n" \
 "\n" \
-"INLINE uint32 barrett(const uint64 a, const uint32 b, const uint32 b_inv, const int b_s, uint32 * a_p)\n" \
+"INLINE uint_32 barrett(const uint_64 a, const uint_32 b, const uint_32 b_inv, const int b_s, uint_32 * a_p)\n" \
 "{\n" \
 "	// Using notations of Modular SIMD arithmetic in Mathemagix, Joris van der Hoeven, Grégoire Lecerf, Guillaume Quintin, 2014, HAL.\n" \
 "	// n = 31, alpha = 2^{n-2} = 2^29, s = r - 2, t = n + 1 = 32 => h = 1.\n" \
@@ -1003,50 +1003,50 @@ static const char * const src_ocl_kernel2 = \
 "	// Then -1 + 0 + 0 + 0 < h < 0 + 1/2 (2^{s + 32}/b - b_inv) + b_inv/2^32 + 1,\n" \
 "	// 0 <= h < 1 + 1/2 + 1/2 => h = 1.\n" \
 "\n" \
-"	const uint32 d = mul_hi((uint32)(a >> b_s), b_inv), r = (uint32)(a) - d * b;\n" \
+"	const uint_32 d = mul_hi((uint_32)(a >> b_s), b_inv), r = (uint_32)(a) - d * b;\n" \
 "	const bool o = (r >= b);\n" \
 "	*a_p = d + (o ? 1 : 0);\n" \
 "	return r - (o ? b : 0);\n" \
 "}\n" \
 "\n" \
-"INLINE int32 reduce64(int64 * f, const uint32 b, const uint32 b_inv, const int b_s)\n" \
+"INLINE int_32 reduce64(int_64 * f, const uint_32 b, const uint_32 b_inv, const int b_s)\n" \
 "{\n" \
 "	// 1- t < 2^63 => t_h < 2^34. We must have t_h < 2^29 b => b > 32\n" \
 "	// 2- t < 2^22 b^2 => t_h < b^2 / 2^7. If 2 <= b < 32 then t_h < 32^2 / 2^7 = 2^8 < 2^29 b\n" \
-"	const uint64 t = abs(*f);\n" \
-"	const uint64 t_h = t >> 29;\n" \
-"	const uint32 t_l = (uint32)(t) % (1u << 29);\n" \
+"	const uint_64 t = abs(*f);\n" \
+"	const uint_64 t_h = t >> 29;\n" \
+"	const uint_32 t_l = (uint_32)(t) % (1u << 29);\n" \
 "\n" \
-"	uint32 d_h, r_h = barrett(t_h, b, b_inv, b_s, &d_h);\n" \
-"	uint32 d_l, r_l = barrett(((uint64)(r_h) << 29) | t_l, b, b_inv, b_s, &d_l);\n" \
-"	const uint64 d = ((uint64)(d_h) << 29) | d_l;\n" \
+"	uint_32 d_h, r_h = barrett(t_h, b, b_inv, b_s, &d_h);\n" \
+"	uint_32 d_l, r_l = barrett(((uint_64)(r_h) << 29) | t_l, b, b_inv, b_s, &d_l);\n" \
+"	const uint_64 d = ((uint_64)(d_h) << 29) | d_l;\n" \
 "\n" \
 "	const bool s = (*f < 0);\n" \
-"	*f = s ? -(int64)(d) : (int64)(d);\n" \
-"	return s ? -(int32)(r_l) : (int32)(r_l);\n" \
+"	*f = s ? -(int_64)(d) : (int_64)(d);\n" \
+"	return s ? -(int_32)(r_l) : (int_32)(r_l);\n" \
 "}\n" \
 "\n" \
 "__kernel __attribute__((reqd_work_group_size(NORM_WG_SZ, 1, 1)))\n" \
-"void normalize1(__global RNS2 * restrict const z, __global int64 * restrict const c,\n" \
-"	const uint32 b, const uint32 b_inv, const int b_s, const int32 dup)\n" \
+"void normalize1(__global RNS2 * restrict const z, __global int_64 * restrict const c,\n" \
+"	const uint_32 b, const uint_32 b_inv, const int b_s, const int_32 dup)\n" \
 "{\n" \
 "	const sz_t gid = (sz_t)get_global_id(0), lid = gid % NORM_WG_SZ;\n" \
 "	__global RNS2 * restrict const zi = &z[2 * gid];\n" \
-"	__local int64 cl[NORM_WG_SZ];\n" \
+"	__local int_64 cl[NORM_WG_SZ];\n" \
 "\n" \
 "	// Not converted into Montgomery form such that output is converted out of Montgomery form\n" \
 "	const RNS norm = (RNS)(NORM1, NORM2);\n" \
 "\n" \
 "	const RNS2 u01 = mul2(zi[0], norm), u23 = mul2(zi[1], norm);\n" \
 "\n" \
-"	int32_4 r;\n" \
-"	int64 l0 = garner2(u01.s0, u01.s1); if (dup != 0) l0 += l0;\n" \
-"	int64 f = l0; r.s0 = reduce64(&f, b, b_inv, b_s);\n" \
-"	int64 l1 = garner2(u01.s2, u01.s3); if (dup != 0) l1 += l1;\n" \
+"	int_32_4 r;\n" \
+"	int_64 l0 = garner2(u01.s0, u01.s1); if (dup != 0) l0 += l0;\n" \
+"	int_64 f = l0; r.s0 = reduce64(&f, b, b_inv, b_s);\n" \
+"	int_64 l1 = garner2(u01.s2, u01.s3); if (dup != 0) l1 += l1;\n" \
 "	f += l1; r.s1 = reduce64(&f, b, b_inv, b_s);\n" \
-"	int64 l2 = garner2(u23.s0, u23.s1); if (dup != 0) l2 += l2;\n" \
+"	int_64 l2 = garner2(u23.s0, u23.s1); if (dup != 0) l2 += l2;\n" \
 "	f += l2; r.s2 = reduce64(&f, b, b_inv, b_s);\n" \
-"	int64 l3 = garner2(u23.s2, u23.s3); if (dup != 0) l3 += l3;\n" \
+"	int_64 l3 = garner2(u23.s2, u23.s3); if (dup != 0) l3 += l3;\n" \
 "	f += l3; r.s3 = reduce64(&f, b, b_inv, b_s);\n" \
 "\n" \
 "	cl[lid] = f;\n" \
@@ -1069,41 +1069,41 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"void normalize2(__global RNS * restrict const z, __global const int64 * restrict const c, \n" \
-"	const uint32 b, const uint32 b_inv, const int b_s)\n" \
+"void normalize2(__global RNS * restrict const z, __global const int_64 * restrict const c, \n" \
+"	const uint_32 b, const uint_32 b_inv, const int b_s)\n" \
 "{\n" \
 "	const sz_t gid = (sz_t)get_global_id(0);\n" \
 "	__global RNS * restrict const zi = &z[NORM_WG_SZ * 4 * gid];\n" \
 "\n" \
-"	int64 f = c[gid];\n" \
+"	int_64 f = c[gid];\n" \
 "\n" \
 "	for (sz_t j = 0; j < 3; ++j)\n" \
 "	{\n" \
 "		f += geti_P1(zi[j].s0);\n" \
-"		const int32 r = reduce64(&f, b, b_inv, b_s);\n" \
+"		const int_32 r = reduce64(&f, b, b_inv, b_s);\n" \
 "		zi[j] = toRNS(r);\n" \
 "		if (f == 0) return;\n" \
 "	}\n" \
 "	f += geti_P1(zi[3].s0);\n" \
-"	zi[3] = toRNS((int32)(f));\n" \
+"	zi[3] = toRNS((int_32)(f));\n" \
 "}\n" \
 "\n" \
 "__kernel __attribute__((reqd_work_group_size(NORM_WG_SZ, 1, 1)))\n" \
-"void mulscalar(__global RNS * restrict const z, __global int64 * restrict const c,\n" \
-"	const uint32 b, const uint32 b_inv, const int b_s, const int32 a)\n" \
+"void mulscalar(__global RNS * restrict const z, __global int_64 * restrict const c,\n" \
+"	const uint_32 b, const uint_32 b_inv, const int b_s, const int_32 a)\n" \
 "{\n" \
 "	const sz_t gid = (sz_t)get_global_id(0), lid = gid % NORM_WG_SZ;\n" \
 "	__global RNS * restrict const zi = &z[4 * gid];\n" \
-"	__local int64 cl[NORM_WG_SZ];\n" \
+"	__local int_64 cl[NORM_WG_SZ];\n" \
 "\n" \
-"	int32_4 r;\n" \
-"	int64 f = geti_P1(zi[0].s0) * (int64)(a);\n" \
+"	int_32_4 r;\n" \
+"	int_64 f = geti_P1(zi[0].s0) * (int_64)(a);\n" \
 "	r.s0 = reduce64(&f, b, b_inv, b_s);\n" \
-"	f += geti_P1(zi[1].s0) * (int64)(a);\n" \
+"	f += geti_P1(zi[1].s0) * (int_64)(a);\n" \
 "	r.s1 = reduce64(&f, b, b_inv, b_s);\n" \
-"	f += geti_P1(zi[2].s0) * (int64)(a);\n" \
+"	f += geti_P1(zi[2].s0) * (int_64)(a);\n" \
 "	r.s2 = reduce64(&f, b, b_inv, b_s);\n" \
-"	f += geti_P1(zi[3].s0) * (int64)(a);\n" \
+"	f += geti_P1(zi[3].s0) * (int_64)(a);\n" \
 "	r.s3 = reduce64(&f, b, b_inv, b_s);\n" \
 "\n" \
 "	cl[lid] = f;\n" \
@@ -1126,10 +1126,10 @@ static const char * const src_ocl_kernel2 = \
 "}\n" \
 "\n" \
 "__kernel\n" \
-"void set(__global RNS2 * restrict const z, const uint32 a)\n" \
+"void set(__global RNS2 * restrict const z, const uint_32 a)\n" \
 "{\n" \
 "	const sz_t idx = (sz_t)get_global_id(0);\n" \
-"	const uint32 ai = (idx == 0) ? a : 0;\n" \
+"	const uint_32 ai = (idx == 0) ? a : 0;\n" \
 "	z[idx] = (RNS2)(ai, ai, 0, 0);\n" \
 "}\n" \
 "\n" \
