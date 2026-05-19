@@ -42,7 +42,7 @@ OFLAGS = -ffinite-math-only -frename-registers -fprefetch-loop-arrays
 else
 OFLAGS = -ffinite-math-only -ffp-contract=fast -fno-trapping-math -fno-signed-zeros
 endif
-FLAGS_CPU = -O3
+FLAGS_CPU = -O3 -fopenmp
 FLAGS_GPU = -O3 -DGPU
 
 OBJS_CPU = main.o transform_sse2.o transform_sse4.o transform_avx.o transform_fma.o transform_512.o transform_i32.o
@@ -99,7 +99,7 @@ transform_ocl.o: $(SRC_DIR)/transform_ocl.cpp $(DEPS_TRANSFORM_GPU)
 	$(CC) $(CFLAGS) $(FLAGS_GPU) $(OCL_INC) -c $< -o $@
 
 $(EXEC_CPU): $(OBJS_CPU)
-	$(CC) $(FLAGS_CPU) -fomp -static $^ -lgmp $(BOINC_LIB) -o $@
+	$(CC) $(FLAGS_CPU) -lgmp -static $^ -lgmp $(BOINC_LIB) -o $@
 
 $(EXEC_GPU): $(OBJS_GPU)
-	$(CC) $(FLAGS_GPU) -fomp -static-libgcc -static-libstdc++ $^ /usr/lib/x86_64-linux-gnu/libgmp.a $(BOINC_LIB) $(BOINC_LIB_OCL) $(OCL_LIB) -o $@
+	$(CC) $(FLAGS_GPU) -static-libgcc -static-libstdc++ $^ /usr/lib/x86_64-linux-gnu/libgmp.a $(BOINC_LIB) $(BOINC_LIB_OCL) $(OCL_LIB) -o $@
