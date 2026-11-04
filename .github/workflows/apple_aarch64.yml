@@ -53,8 +53,9 @@ jobs:
           git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
           cd gmp-6.3
           ./.bootstrap
-          ./configure --prefix=${GITHUB_WORKSPACE}/../gmp_build --disable-shared
+          ./configure --disable-shared
           make -j
+          ls
 
       - name: Build project
         working-directory: ./genefer
