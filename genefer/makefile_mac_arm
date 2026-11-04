@@ -13,7 +13,7 @@ SRC_DIR = $(ROOT_DIR)/src
 # GMP source code: https://gmplib.org/download/gmp/gmp-6.3.0.tar.xz
 # ./configure --disable-shared CC="clang -target arm64-apple-macos11"
 # make => gmp.h .libs/libgmp.a
-GMP_DIR = $(ROOT_DIR)/../gmp-6.3.0
+GMP_DIR = $(ROOT_DIR)/../gmp-6.3
 GMP_INC = -I$(GMP_DIR)
 GMP_LIB = $(GMP_DIR)/.libs/libgmp.a
 
