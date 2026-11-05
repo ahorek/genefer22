@@ -3,6 +3,7 @@
 BOINC = true
 
 RM = rm
+CC = /opt/homebrew/opt/llvm/bin/clang++ -std=c++17
 
 ROOT_DIR = ..
 
