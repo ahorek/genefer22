@@ -24,9 +24,8 @@ ifdef BOINC
 # BOINC source code: https://github.com/BOINC/boinc/archive/refs/tags/client_release/8.2/8.2.9.zip
 BOINC_DIR = $(ROOT_DIR)/../boinc
 BOINC_INC = -I$(BOINC_DIR) -I$(BOINC_DIR)/api -I$(BOINC_DIR)/lib
-BOINC_LIB_DIR = $(BOINC_DIR)/mac_build/build/Deployment
-BOINC_LIB = $(BOINC_LIB_DIR)/libboinc_api.a $(BOINC_LIB_DIR)/libboinc.a
-BOINC_LIB_OCL = $(BOINC_LIB_DIR)/libboinc_opencl.a
+BOINC_LIB = $(BOINC_DIR)/api/libboinc_api.a $(BOINC_DIR)/lib/libboinc.a
+BOINC_LIB_OCL = $(BOINC_DIR)/api/libboinc_opencl.a
 endif
 
 CFLAGS = -Wall -Wextra -Wsign-conversion
