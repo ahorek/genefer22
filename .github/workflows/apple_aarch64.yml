@@ -70,8 +70,7 @@ jobs:
       - name: Test
         working-directory: ./genefer
         run: |
-          ls
-          cd genefer22/bin
+          cd ../bin
           objdump -d --disassemble-symbols=__ZN4file8rc_crc32EjPKcm bin/genefer_mac_arm | grep -E 'z[0-9]+\.|ptrue|whilelo'
           ./genefer_mac_arm -h
 
