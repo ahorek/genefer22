@@ -50,6 +50,7 @@ jobs:
           export LDFLAGS="-mmacosx-version-min=11.0"
           export CC=/opt/homebrew/opt/llvm/bin/clang
           export CXX=/opt/homebrew/opt/llvm/bin/clang++
+          cd ..
           git clone --depth 1 https://github.com/gmp-mirror/gmp-6.3.git
           cd gmp-6.3
           ./.bootstrap
