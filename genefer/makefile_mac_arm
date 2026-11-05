@@ -1,5 +1,4 @@
 # Compiler: Apple clang (xcode-select --install)
-CC = clang++ -std=c++17 -target arm64-apple-macos11
 # Comment this line if Boinc is not needed
 BOINC = true
 
