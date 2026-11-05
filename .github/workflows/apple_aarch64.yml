@@ -67,6 +67,13 @@ jobs:
           export LDFLAGS="-mmacosx-version-min=11.0"
           make -f makefile_mac_arm -j
 
+      - name: Test
+        working-directory: ./genefer
+        run: |
+          cd bin
+          objdump -d --disassemble-symbols=__ZN4file8rc_crc32EjPKcm bin/genefer_mac_arm | grep -E 'z[0-9]+\.|ptrue|whilelo'
+          ./genefer_mac_arm -h
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
