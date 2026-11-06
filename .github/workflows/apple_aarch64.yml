@@ -71,7 +71,8 @@ jobs:
         working-directory: ./genefer
         run: |
           cd ../bin
-          objdump -d --disassemble-symbols=__ZN4file8rc_crc32EjPKcm bin/genefer_mac_arm | grep -E 'z[0-9]+\.|ptrue|whilelo'
+          ls
+          objdump -d --disassemble-symbols=__ZN4file8rc_crc32EjPKcm genefer_mac_arm | grep -E 'z[0-9]+\.|ptrue|whilelo'
           ./genefer_mac_arm -h
 
       - name: Upload artifacts
