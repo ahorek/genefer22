@@ -72,7 +72,6 @@ jobs:
         run: |
           cd ../bin
           ls
-          objdump -d --no-show-raw-insn genefer_mac_arm | awk '/^[0-9a-f]+ <.*>:$/{fn=$2} /ptrue|whilelo|cnt[bhwd] |ld1[bdw]|st1[bdw]|[[:space:]]z[0-9]+\./{print fn}' | sort | uniq -c | sort -rn | grep -v transformCPU_sve | head -30
           ./genefer_mac_arm -h
 
       - name: Upload artifacts
