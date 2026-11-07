@@ -3,7 +3,6 @@
 BOINC = true
 
 RM = rm
-CC = /opt/homebrew/opt/llvm/bin/clang++ -std=c++17
 
 ROOT_DIR = ..
 
@@ -36,7 +35,6 @@ OFLAGS = -ffinite-math-only -ffp-contract=fast -fno-trapping-math -fno-signed-ze
 FLAGS_CPU = -O3
 FLAGS_GPU = -O3 -DGPU
 
-# Apple M processors do not support SVE: SVE objects are not built (their inline/template copies would replace NEON ones at link time => SIGILL)
 OBJS_CPU = main.o transform_neon.o
 OBJS_GPU = maing.o transform_ocl.o
 DEPS_COMMON = $(SRC_DIR)/transform.h $(SRC_DIR)/file.h $(SRC_DIR)/gint.h $(SRC_DIR)/pio.h $(SRC_DIR)/boinc.h
